@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitPeach.ViewModels"
+             x:Class="GitPeach.Views.DiffListView"
+             x:DataType="vm:RepoViewModel">
+  <Panel>
+    <ListBox x:Name="DiffList" Classes="diff" ItemsSource="{Binding DiffRows}"
+             ScrollViewer.HorizontalScrollBarVisibility="Auto" Background="#1b1c1f">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:DiffRowVM">
+          <Panel Background="{Binding Background}">
+            <Grid ColumnDefinitions="44,44,16,*" IsVisible="{Binding IsLine}">
+              <TextBlock Text="{Binding OldNo}" Classes="dim mono" FontSize="12" HorizontalAlignment="Right" Margin="0,0,6,0" />
+              <TextBlock Grid.Column="1" Text="{Binding NewNo}" Classes="dim mono" FontSize="12" HorizontalAlignment="Right" Margin="0,0,6,0" />
+              <TextBlock Grid.Column="2" Text="{Binding Prefix}" Foreground="{Binding PrefixBrush}" Classes="mono" FontSize="12" />
+              <TextBlock Grid.Column="3" Text="{Binding Text}" Foreground="{Binding Foreground}" Classes="mono" FontSize="12" />
+            </Grid>
+            <DockPanel IsVisible="{Binding IsHunkHeader}" Margin="6,2">
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+                <Button Content="Stage hunk" Command="{Binding StageCommand}" IsVisible="{Binding CanStage}" Padding="8,1" FontSize="11" />
+                <Button Content="Unstage hunk" Command="{Binding UnstageCommand}" IsVisible="{Binding CanUnstage}" Padding="8,1" FontSize="11" />
+                <Button Content="Descartar" Command="{Binding DiscardCommand}" IsVisible="{Binding CanDiscard}" Padding="8,1" FontSize="11" />
+              </StackPanel>
+              <TextBlock Text="{Binding Text}" Foreground="{Binding Foreground}" Classes="mono" FontSize="12" VerticalAlignment="Center" />
+            </DockPanel>
+            <TextBlock IsVisible="{Binding IsFileHeader}" Text="{Binding Text}" Foreground="{Binding Foreground}"
+                       FontWeight="SemiBold" Margin="8,6" />
+            <TextBlock IsVisible="{Binding IsNote}" Text="{Binding Text}" Foreground="{Binding Foreground}" Margin="8,4" FontStyle="Italic" />
+          </Panel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <Button x:Name="PopOutButton" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,22,0"
+            Padding="8,2" FontSize="11" Content="⧉ Ventana" Click="OnPopOut"
+            ToolTip.Tip="Abrir el diff en una ventana aparte" />
+  </Panel>
+</UserControl>

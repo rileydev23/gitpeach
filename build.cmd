@@ -1,0 +1,18 @@
+@echo off
+rem Builds a single-file, self-contained, portable GitPeach.exe into .\dist
+setlocal
+cd /d "%~dp0"
+if exist dist rmdir /s /q dist
+dotnet publish src\GitPeach\GitPeach.csproj -c Release -r win-x64 --self-contained ^
+  -p:PublishSingleFile=true ^
+  -p:PublishReadyToRun=true ^
+  -p:PublishTrimmed=true ^
+  -p:TrimMode=partial ^
+  -p:IncludeNativeLibrariesForSelfExtract=true ^
+  -p:EnableCompressionInSingleFile=false ^
+  -p:DebugType=none -p:DebugSymbols=false ^
+  -o dist
+if errorlevel 1 exit /b 1
+echo.
+echo Listo: %~dp0dist\GitPeach.exe
+echo Para modo 100%% portable (datos junto al exe) crea un archivo "portable.txt" al lado del exe.

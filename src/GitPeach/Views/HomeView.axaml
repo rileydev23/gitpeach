@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitPeach.ViewModels"
+             xmlns:svc="using:GitPeach.Services"
+             x:Class="GitPeach.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="10">
+      <DockPanel LastChildFill="True">
+        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="6">
+          <Button Classes="accent" Content="Agregar repositorio..." Command="{Binding AddCommand}" />
+          <Button Content="Escanear carpeta..." Command="{Binding ScanCommand}" />
+          <Button Content="Clonar..." Command="{Binding CloneCommand}" />
+          <Button Content="Actualizar" Command="{Binding RefreshCommand}" />
+        </StackPanel>
+        <ToggleButton DockPanel.Dock="Right" Content="★ Favoritos" IsChecked="{Binding OnlyFavorites}" Margin="6,0,0,0" />
+        <TextBox Text="{Binding Filter}" Watermark="Filtrar repositorios..." Margin="12,0,0,0" x:Name="FilterBox" />
+      </DockPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Background="#18191c" BorderBrush="#3a3c42" BorderThickness="0,1,0,0" Padding="10,4">
+      <DockPanel>
+        <ProgressBar DockPanel.Dock="Right" IsIndeterminate="True" IsVisible="{Binding Busy}" Width="120" Height="6" />
+        <TextBlock Classes="dim" Text="{Binding Status}" />
+      </DockPanel>
+    </Border>
+
+    <Grid>
+      <ListBox x:Name="RepoList" ItemsSource="{Binding Repos}" SelectedItem="{Binding Selected}">
+        <ListBox.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="Abrir" Command="{Binding OpenCommand}" />
+            <MenuItem Header="Favorito (alternar)" Command="{Binding ToggleFavoriteCommand}" />
+            <MenuItem Header="Abrir en el Explorador" Command="{Binding OpenInExplorerCommand}" />
+            <MenuItem Header="Abrir terminal aquí" Command="{Binding OpenInTerminalCommand}" />
+            <Separator />
+            <MenuItem Header="Quitar de la lista" Command="{Binding RemoveCommand}" />
+          </ContextMenu>
+        </ListBox.ContextMenu>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="svc:RepoEntry">
+            <Grid ColumnDefinitions="28,*,Auto" Margin="10,8">
+              <TextBlock Text="★" Foreground="#e0a24a" IsVisible="{Binding Favorite}" VerticalAlignment="Center" />
+              <StackPanel Grid.Column="1" Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" />
+                  <TextBlock Text="{Binding Branch}" Foreground="#6cc070" VerticalAlignment="Center" />
+                  <TextBlock Text="(carpeta no encontrada)" Foreground="#e0645a" IsVisible="{Binding Missing}" />
+                </StackPanel>
+                <TextBlock Text="{Binding Path}" Classes="dim" FontSize="12" />
+              </StackPanel>
+              <TextBlock Grid.Column="2" Classes="dim" VerticalAlignment="Center"
+                         Text="{Binding LastOpened, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6" IsHitTestVisible="False"
+                  IsVisible="{Binding IsEmpty}">
+        <TextBlock Text="No hay repositorios en la lista" FontSize="16" HorizontalAlignment="Center" />
+        <TextBlock Classes="dim" Text="Agrega uno, escanea una carpeta o arrastra carpetas a esta ventana." />
+      </StackPanel>
+    </Grid>
+  </DockPanel>
+</UserControl>

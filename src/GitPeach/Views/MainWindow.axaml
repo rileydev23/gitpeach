@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GitPeach.ViewModels"
+        xmlns:views="using:GitPeach.Views"
+        x:Class="GitPeach.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="GitPeach"
+        Icon="/Assets/app.ico"
+        MinWidth="800" MinHeight="500"
+        DragDrop.AllowDrop="True">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+P" Command="{Binding QuickOpenCommand}" />
+    <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseCurrentCommand}" />
+    <KeyBinding Gesture="Ctrl+Tab" Command="{Binding NextTabCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+Tab" Command="{Binding PreviousTabCommand}" />
+  </Window.KeyBindings>
+
+  <DockPanel>
+    <!-- Tab strip -->
+    <Border DockPanel.Dock="Top" Background="#18191c" BorderBrush="#3a3c42" BorderThickness="0,0,0,1">
+      <DockPanel>
+      <Image DockPanel.Dock="Left" Source="/Assets/icon64.png" Width="22" Height="22" Margin="10,0,4,0" VerticalAlignment="Center" />
+      <ListBox ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab}">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:TabViewModel">
+            <StackPanel Orientation="Horizontal" Margin="12,7,6,7" Spacing="8">
+              <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+              <Button Classes="flat" Content="✕" Command="{Binding CloseCommand}"
+                      IsVisible="{Binding Closable}" FontSize="10" Padding="4,1"
+                      Foreground="#8a8d93" VerticalAlignment="Center" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      </DockPanel>
+    </Border>
+
+    <ContentControl Content="{Binding SelectedTab}">
+      <ContentControl.DataTemplates>
+        <DataTemplate DataType="vm:HomeViewModel"><views:HomeView /></DataTemplate>
+        <DataTemplate DataType="vm:RepoViewModel"><views:RepoView /></DataTemplate>
+      </ContentControl.DataTemplates>
+    </ContentControl>
+  </DockPanel>
+</Window>
