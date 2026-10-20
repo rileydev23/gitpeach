@@ -13,12 +13,24 @@
     <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseCurrentCommand}" />
     <KeyBinding Gesture="Ctrl+Tab" Command="{Binding NextTabCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+Tab" Command="{Binding PreviousTabCommand}" />
+    <KeyBinding Gesture="F1" Command="{Binding ShowShortcutsCommand}" />
+    <KeyBinding Gesture="Ctrl+D1" Command="{Binding SelectTabCommand}" CommandParameter="1" />
+    <KeyBinding Gesture="Ctrl+D2" Command="{Binding SelectTabCommand}" CommandParameter="2" />
+    <KeyBinding Gesture="Ctrl+D3" Command="{Binding SelectTabCommand}" CommandParameter="3" />
+    <KeyBinding Gesture="Ctrl+D4" Command="{Binding SelectTabCommand}" CommandParameter="4" />
+    <KeyBinding Gesture="Ctrl+D5" Command="{Binding SelectTabCommand}" CommandParameter="5" />
+    <KeyBinding Gesture="Ctrl+D6" Command="{Binding SelectTabCommand}" CommandParameter="6" />
+    <KeyBinding Gesture="Ctrl+D7" Command="{Binding SelectTabCommand}" CommandParameter="7" />
+    <KeyBinding Gesture="Ctrl+D8" Command="{Binding SelectTabCommand}" CommandParameter="8" />
+    <KeyBinding Gesture="Ctrl+D9" Command="{Binding SelectTabCommand}" CommandParameter="9" />
   </Window.KeyBindings>
 
   <DockPanel>
     <!-- Tab strip -->
     <Border DockPanel.Dock="Top" Background="#18191c" BorderBrush="#3a3c42" BorderThickness="0,0,0,1">
       <DockPanel>
+      <Button DockPanel.Dock="Right" Classes="flat" Content="?" Command="{Binding ShowShortcutsCommand}"
+              ToolTip.Tip="Atajos de teclado (F1)" Foreground="#8a8d93" Margin="0,0,8,0" VerticalAlignment="Center" />
       <Image DockPanel.Dock="Left" Source="/Assets/icon64.png" Width="22" Height="22" Margin="10,0,4,0" VerticalAlignment="Center" />
       <ListBox ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab}">
         <ListBox.ItemsPanel>

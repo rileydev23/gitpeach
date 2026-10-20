@@ -13,14 +13,14 @@ public partial class MainWindow : Window
         AddHandler(DragDrop.DropEvent, OnDrop);
         AddHandler(DragDrop.DragOverEvent, (_, e) =>
         {
-            e.DragEffects = e.Data.Contains(DataFormats.Files) ? DragDropEffects.Copy : DragDropEffects.None;
+            e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None;
         });
     }
 
     private async void OnDrop(object? sender, DragEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm) return;
-        var files = e.Data.GetFiles();
+        var files = e.DataTransfer.TryGetFiles();
         if (files is null) return;
         foreach (var item in files)
         {

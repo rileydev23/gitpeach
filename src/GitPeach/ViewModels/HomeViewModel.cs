@@ -1,17 +1,20 @@
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GitPeach.Git;
 using GitPeach.Services;
-using GitPeach.Views;
 
 namespace GitPeach.ViewModels;
 
 public partial class HomeViewModel : TabViewModel
 {
-    private readonly RepoStore _store;
-    private readonly Action<RepoEntry> _open;
+    private readonly IAppStateStore _store;
+    private readonly IGitHost _git;
+    private readonly IDialogService _dialogs;
+    private readonly IShellService _shell;
+
+    /// <summary>Raised when the user wants to open a repository in a tab.</summary>
+    public event Action<RepoEntry>? OpenRequested;
 
     public override bool Closable => false;
     public ObservableCollection<RepoEntry> Repos { get; } = new();
@@ -23,10 +26,12 @@ public partial class HomeViewModel : TabViewModel
     [ObservableProperty] private bool _busy;
     [ObservableProperty] private bool _isEmpty;
 
-    public HomeViewModel(RepoStore store, Action<RepoEntry> open)
+    public HomeViewModel(IAppStateStore store, IGitHost git, IDialogService dialogs, IShellService shell)
     {
         _store = store;
-        _open = open;
+        _git = git;
+        _dialogs = dialogs;
+        _shell = shell;
         Title = "Repositorios";
         Reload();
         _ = RefreshBranchesAsync();
@@ -41,7 +46,7 @@ public partial class HomeViewModel : TabViewModel
         Repos.Clear();
         var q = Filter.Trim();
         foreach (var r in _store.State.Repos
-                     .Where(r => (!OnlyFavorites || r.Favorite) && Dialogs.Fuzzy(r.Name + " " + r.Path, q))
+                     .Where(r => (!OnlyFavorites || r.Favorite) && FuzzyMatcher.Matches(r.Name + " " + r.Path, q))
                      .OrderByDescending(r => r.Favorite)
                      .ThenByDescending(r => r.LastOpened))
             Repos.Add(r);
@@ -55,7 +60,7 @@ public partial class HomeViewModel : TabViewModel
         await Task.WhenAll(snapshot.Select(async r =>
         {
             r.Missing = !Directory.Exists(r.Path);
-            r.Branch = r.Missing ? null : await GitRepository.CurrentBranchOf(r.Path);
+            r.Branch = r.Missing ? null : await _git.CurrentBranchOf(r.Path);
         }));
         Reload();
     }
@@ -70,20 +75,20 @@ public partial class HomeViewModel : TabViewModel
             Status = $"La carpeta ya no existe: {entry.Path}";
             return;
         }
-        _open(entry);
+        OpenRequested?.Invoke(entry);
     }
 
     [RelayCommand]
     private async Task AddAsync()
     {
-        var dir = await Dialogs.PickFolder("Seleccionar repositorio");
+        var dir = await _dialogs.PickFolder("Seleccionar repositorio");
         if (dir is null) return;
         await AddPathAsync(dir, open: true);
     }
 
     public async Task AddPathAsync(string dir, bool open)
     {
-        var root = await GitRepository.FindRoot(dir);
+        var root = await _git.FindRoot(dir);
         if (root is null)
         {
             Status = $"No es un repositorio git: {dir}";
@@ -94,13 +99,13 @@ public partial class HomeViewModel : TabViewModel
         Selected = entry;
         Status = $"Agregado: {entry.Name}";
         _ = RefreshBranchesAsync();
-        if (open) _open(entry);
+        if (open) OpenRequested?.Invoke(entry);
     }
 
     [RelayCommand]
     private async Task ScanAsync()
     {
-        var dir = await Dialogs.PickFolder("Carpeta a escanear");
+        var dir = await _dialogs.PickFolder("Carpeta a escanear");
         if (dir is null) return;
         Busy = true;
         Status = "Escaneando...";
@@ -149,13 +154,13 @@ public partial class HomeViewModel : TabViewModel
     [RelayCommand]
     private async Task CloneAsync()
     {
-        var f = await Dialogs.Form("Clonar repositorio", new[] { ("URL del repositorio", ""), ("Carpeta de destino", "") }, "Clonar");
+        var f = await _dialogs.Form("Clonar repositorio", new[] { ("URL del repositorio", ""), ("Carpeta de destino", "") }, "Clonar");
         if (f is null || string.IsNullOrWhiteSpace(f[0])) return;
         var url = f[0].Trim();
         var dest = f[1].Trim();
         if (dest.Length == 0)
         {
-            var parent = await Dialogs.PickFolder("Carpeta donde clonar");
+            var parent = await _dialogs.PickFolder("Carpeta donde clonar");
             if (parent is null) return;
             var name = Path.GetFileNameWithoutExtension(url.TrimEnd('/', '\\'));
             dest = Path.Combine(parent, name);
@@ -164,7 +169,7 @@ public partial class HomeViewModel : TabViewModel
         Status = "Clonando...";
         try
         {
-            var res = await GitRepository.Clone(url, dest, chunk =>
+            var res = await _git.Clone(url, dest, chunk =>
             {
                 var last = chunk.Split('\r', '\n', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
                 if (last is not null) Avalonia.Threading.Dispatcher.UIThread.Post(() => Status = last.Trim());
@@ -172,7 +177,7 @@ public partial class HomeViewModel : TabViewModel
             if (!res.Ok)
             {
                 Status = "Clonado falló";
-                await Dialogs.Message("Error al clonar", res.Message);
+                await _dialogs.Message("Error al clonar", res.Message);
                 return;
             }
             await AddPathAsync(dest, open: true);
@@ -205,7 +210,7 @@ public partial class HomeViewModel : TabViewModel
     {
         entry ??= Selected;
         if (entry is null) return;
-        try { Process.Start(new ProcessStartInfo("explorer.exe", $"\"{entry.Path}\"") { UseShellExecute = true }); } catch { }
+        _shell.OpenFolder(entry.Path);
     }
 
     [RelayCommand]
@@ -213,12 +218,7 @@ public partial class HomeViewModel : TabViewModel
     {
         entry ??= Selected;
         if (entry is null) return;
-        try
-        {
-            var psi = new ProcessStartInfo("cmd.exe") { WorkingDirectory = entry.Path, UseShellExecute = true };
-            Process.Start(psi);
-        }
-        catch { }
+        _shell.OpenTerminal(entry.Path);
     }
 
     [RelayCommand]

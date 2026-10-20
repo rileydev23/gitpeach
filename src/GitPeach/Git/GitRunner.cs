@@ -7,9 +7,25 @@ public sealed record GitResult(int ExitCode, string Stdout, string Stderr)
 {
     public bool Ok => ExitCode == 0;
     public string Message => string.IsNullOrWhiteSpace(Stderr) ? Stdout.Trim() : Stderr.Trim();
+
+    public static GitResult Success(string stdout = "") => new(0, stdout, "");
+    public static GitResult Fail(string message) => new(-1, "", message);
 }
 
-public static class GitRunner
+/// <summary>Runs the git executable. The only place that spawns git processes.</summary>
+public interface IGitRunner
+{
+    string GitExe { get; set; }
+
+    Task<GitResult> RunAsync(
+        string cwd,
+        IReadOnlyList<string> args,
+        string? stdin = null,
+        Action<string>? onStderr = null,
+        CancellationToken ct = default);
+}
+
+public sealed class GitRunner : IGitRunner
 {
     private static readonly UTF8Encoding Utf8 = new(false);
     private static readonly string[] BaseArgs =
@@ -20,9 +36,9 @@ public static class GitRunner
         "-c", "i18n.logOutputEncoding=UTF-8",
     };
 
-    public static string GitExe { get; set; } = "git";
+    public string GitExe { get; set; } = "git";
 
-    public static async Task<GitResult> RunAsync(
+    public async Task<GitResult> RunAsync(
         string cwd,
         IReadOnlyList<string> args,
         string? stdin = null,
@@ -59,7 +75,7 @@ public static class GitRunner
         }
         catch (Exception ex)
         {
-            return new GitResult(-1, "", $"No se pudo ejecutar git: {ex.Message}");
+            return GitResult.Fail($"No se pudo ejecutar git: {ex.Message}");
         }
 
         var stdoutTask = proc.StandardOutput.ReadToEndAsync(ct);

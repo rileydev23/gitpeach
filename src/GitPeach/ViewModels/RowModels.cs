@@ -88,6 +88,7 @@ public sealed class FileEntryVM
     public string PrimaryText => Change.Staged ? "−" : "+";
     public ICommand? DiscardCommand { get; set; }
     public bool CanDiscard => !Change.Staged;
+    public bool IsConflict => Change.IsConflict;
 }
 
 /// <summary>File row in commit mode: click scrolls to that file in the diff.</summary>
@@ -122,4 +123,30 @@ public sealed class SidebarItem
     public bool IsHeader => Kind == SidebarKind.Header;
     public FontWeight Weight => IsHeader || IsCurrent ? FontWeight.SemiBold : FontWeight.Normal;
     public IBrush Foreground => IsHeader ? Palette.Dim : Palette.Text;
+}
+
+public sealed class FileRevisionVM
+{
+    public required FileRevision Revision { get; init; }
+    public string ShortHash => Revision.Commit.ShortHash;
+    public string Subject => Revision.Commit.Subject;
+    public string Author => Revision.Commit.Author;
+    public string DateText => Revision.Commit.Date.ToString("yyyy-MM-dd HH:mm");
+    /// <summary>Shown only when the file had another name in that commit.</summary>
+    public string PathNote { get; init; } = "";
+    public bool HasPathNote => PathNote.Length > 0;
+}
+
+public sealed class BlameRowVM
+{
+    public required BlameLine Line { get; init; }
+    /// <summary>Commit info is printed only on the first line of each run of lines from the same commit.</summary>
+    public bool IsGroupStart { get; init; }
+    public IBrush Background { get; init; } = Palette.Transparent;
+    public string ShortHash => IsGroupStart ? (Line.IsUncommitted ? "sin commit" : Line.ShortHash) : "";
+    public string Author => IsGroupStart ? Line.Author : "";
+    public string DateText => IsGroupStart && !Line.IsUncommitted ? Line.Date.ToString("yyyy-MM-dd") : "";
+    public string LineNo => Line.LineNo.ToString();
+    public string Text => Line.Text;
+    public string Tooltip => Line.IsUncommitted ? "Cambios sin commit" : $"{Line.ShortHash} · {Line.Author} · {Line.Date:yyyy-MM-dd HH:mm}\n{Line.Summary}";
 }

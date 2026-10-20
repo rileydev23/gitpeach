@@ -11,10 +11,17 @@ using GitPeach.Services;
 namespace GitPeach.Views;
 
 /// <summary>Small code-built modal dialogs, so we avoid a XAML file per prompt.</summary>
-public static class Dialogs
+public sealed class DialogService : IDialogService
 {
-    public static Window? Owner =>
-        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+    /// <summary>The active window (dialogs opened from a secondary window stay on top of it), else the main one.</summary>
+    public static Window? Owner
+    {
+        get
+        {
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime l) return null;
+            return l.Windows.FirstOrDefault(w => w.IsActive) ?? l.MainWindow;
+        }
+    }
 
     private static Window Make(string title, double width)
     {
@@ -40,7 +47,18 @@ public static class Dialogs
         HorizontalContentAlignment = HorizontalAlignment.Center,
     };
 
-    public static async Task<bool> Confirm(string title, string message, string ok = "Aceptar")
+    private static StackPanel Buttons(params Button[] buttons)
+    {
+        var panel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 10, 0, 0),
+        };
+        panel.Children.AddRange(buttons);
+        return panel;
+    }
+
+    public async Task<bool> Confirm(string title, string message, string ok = "Aceptar")
     {
         var owner = Owner;
         if (owner is null) return false;
@@ -52,12 +70,11 @@ public static class Dialogs
         cancel.Click += (_, _) => w.Close();
         w.Content = new StackPanel
         {
-            Margin = new Thickness(18), Spacing = 16,
+            Margin = new Thickness(18), Spacing = 6,
             Children =
             {
                 new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap, Foreground = Palette.Text },
-                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right,
-                    Children = { okBtn, cancel } },
+                Buttons(okBtn, cancel),
             },
         };
         w.KeyDown += (_, e) => { if (e.Key == Key.Escape) w.Close(); };
@@ -65,7 +82,7 @@ public static class Dialogs
         return result;
     }
 
-    public static async Task Message(string title, string message)
+    public async Task Message(string title, string message)
     {
         var owner = Owner;
         if (owner is null) return;
@@ -74,25 +91,25 @@ public static class Dialogs
         ok.Click += (_, _) => w.Close();
         w.Content = new StackPanel
         {
-            Margin = new Thickness(18), Spacing = 16,
+            Margin = new Thickness(18), Spacing = 6,
             Children =
             {
-                new TextBox { Text = message, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, MaxHeight = 320,
+                new TextBox { Text = message, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, MaxHeight = 420,
                     Background = Palette.Bg, BorderThickness = new Thickness(0), FontFamily = new FontFamily("Consolas") },
-                new StackPanel { HorizontalAlignment = HorizontalAlignment.Right, Children = { ok } },
+                Buttons(ok),
             },
         };
         w.KeyDown += (_, e) => { if (e.Key is Key.Escape or Key.Enter) w.Close(); };
         await w.ShowDialog(owner);
     }
 
-    public static async Task<string?> Prompt(string title, string label, string initial = "")
+    public async Task<string?> Prompt(string title, string label, string initial = "")
     {
         var r = await Form(title, new[] { (label, initial) });
         return r?[0];
     }
 
-    public static async Task<string[]?> Form(string title, (string Label, string Initial)[] fields, string ok = "Aceptar")
+    public async Task<string[]?> Form(string title, (string Label, string Initial)[] fields, string ok = "Aceptar")
     {
         var owner = Owner;
         if (owner is null) return null;
@@ -112,11 +129,7 @@ public static class Dialogs
         void Accept() { result = boxes.Select(b => b.Text ?? "").ToArray(); w.Close(); }
         okBtn.Click += (_, _) => Accept();
         cancel.Click += (_, _) => w.Close();
-        panel.Children.Add(new StackPanel
-        {
-            Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 10, 0, 0),
-            HorizontalAlignment = HorizontalAlignment.Right, Children = { okBtn, cancel },
-        });
+        panel.Children.Add(Buttons(okBtn, cancel));
         w.Content = panel;
         w.KeyDown += (_, e) =>
         {
@@ -128,7 +141,34 @@ public static class Dialogs
         return result;
     }
 
-    public static async Task<string?> PickFolder(string title)
+    public async Task<string?> Choose(string title, string label, IReadOnlyList<string> options, string ok = "Aceptar")
+    {
+        var owner = Owner;
+        if (owner is null || options.Count == 0) return null;
+        var w = Make(title, 420);
+        string? result = null;
+        var combo = new ComboBox { ItemsSource = options, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
+        var okBtn = Btn(ok, true);
+        var cancel = Btn("Cancelar");
+        void Accept() { result = combo.SelectedItem as string; w.Close(); }
+        okBtn.Click += (_, _) => Accept();
+        cancel.Click += (_, _) => w.Close();
+        w.Content = new StackPanel
+        {
+            Margin = new Thickness(18), Spacing = 8,
+            Children = { new TextBlock { Text = label, Foreground = Palette.Dim }, combo, Buttons(okBtn, cancel) },
+        };
+        w.KeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape) w.Close();
+            else if (e.Key == Key.Enter && !combo.IsDropDownOpen) Accept();
+        };
+        w.Opened += (_, _) => combo.Focus();
+        await w.ShowDialog(owner);
+        return result;
+    }
+
+    public async Task<string?> PickFolder(string title)
     {
         var owner = Owner;
         if (owner is null) return null;
@@ -137,7 +177,7 @@ public static class Dialogs
     }
 
     /// <summary>Ctrl+P: fuzzy-pick a saved repository.</summary>
-    public static async Task<RepoEntry?> QuickOpen(IReadOnlyList<RepoEntry> repos)
+    public async Task<RepoEntry?> QuickOpen(IReadOnlyList<RepoEntry> repos)
     {
         var owner = Owner;
         if (owner is null) return null;
@@ -159,7 +199,7 @@ public static class Dialogs
         void Filter()
         {
             var q = search.Text ?? "";
-            var filtered = repos.Where(r => Fuzzy(r.Name + " " + r.Path, q)).ToList();
+            var filtered = repos.Where(r => FuzzyMatcher.Matches(r.Name + " " + r.Path, q)).ToList();
             list.ItemsSource = filtered;
             list.SelectedIndex = filtered.Count > 0 ? 0 : -1;
         }
@@ -182,16 +222,5 @@ public static class Dialogs
         w.Opened += (_, _) => search.Focus();
         await w.ShowDialog(owner);
         return result;
-    }
-
-    public static bool Fuzzy(string text, string query)
-    {
-        if (string.IsNullOrWhiteSpace(query)) return true;
-        int i = 0;
-        foreach (var ch in text)
-        {
-            if (char.ToLowerInvariant(ch) == char.ToLowerInvariant(query[i]) && ++i == query.Length) return true;
-        }
-        return false;
     }
 }

@@ -2,29 +2,33 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GitPeach.Services;
-using GitPeach.Views;
 
 namespace GitPeach.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    public RepoStore Store { get; }
+    private readonly IAppStateStore _store;
+    private readonly IRepoViewModelFactory _repos;
+    private readonly IDialogService _dialogs;
+    private readonly bool _ready;
+
     public HomeViewModel Home { get; }
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
 
     [ObservableProperty] private TabViewModel? _selectedTab;
-    private readonly bool _ready;
 
-    public MainWindowViewModel(RepoStore store)
+    public MainWindowViewModel(IAppStateStore store, HomeViewModel home, IRepoViewModelFactory repos, IDialogService dialogs)
     {
-        Store = store;
-        Home = new HomeViewModel(store, OpenRepo);
+        _store = store;
+        _repos = repos;
+        _dialogs = dialogs;
+        Home = home;
+        Home.OpenRequested += OpenRepo;
         Tabs.Add(Home);
         SelectedTab = Home;
 
-        var saved = store.State.OpenTabs.ToList();
         var active = store.State.ActiveTab;
-        foreach (var path in saved)
+        foreach (var path in store.State.OpenTabs.ToList())
         {
             if (Directory.Exists(path)) AddRepoTab(path, select: false);
         }
@@ -35,7 +39,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     public void OpenRepo(RepoEntry entry)
     {
-        Store.Touch(entry);
+        _store.Touch(entry);
         AddRepoTab(entry.Path, select: true);
         SaveTabs();
     }
@@ -49,7 +53,7 @@ public partial class MainWindowViewModel : ObservableObject
             if (select) SelectedTab = existing;
             return;
         }
-        var tab = new RepoViewModel(path);
+        var tab = _repos.Create(path);
         tab.CloseCommand = new RelayCommand(() => CloseTab(tab));
         Tabs.Add(tab);
         if (select) SelectedTab = tab;
@@ -86,13 +90,23 @@ public partial class MainWindowViewModel : ObservableObject
         SelectedTab = Tabs[(Tabs.IndexOf(SelectedTab) - 1 + Tabs.Count) % Tabs.Count];
     }
 
+    /// <summary>Ctrl+1..9 (1-based, as typed).</summary>
+    [RelayCommand]
+    private void SelectTab(string? number)
+    {
+        if (int.TryParse(number, out var n) && n >= 1 && n <= Tabs.Count) SelectedTab = Tabs[n - 1];
+    }
+
     [RelayCommand]
     private async Task QuickOpenAsync()
     {
-        var picked = await Dialogs.QuickOpen(Store.State.Repos
+        var picked = await _dialogs.QuickOpen(_store.State.Repos
             .OrderByDescending(r => r.Favorite).ThenByDescending(r => r.LastOpened).ToList());
         if (picked is not null) OpenRepo(picked);
     }
+
+    [RelayCommand]
+    private Task ShowShortcuts() => _dialogs.Message("Atajos de teclado", Shortcuts.Describe());
 
     partial void OnSelectedTabChanged(TabViewModel? value)
     {
@@ -101,9 +115,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     public void SaveTabs()
     {
-        Store.State.OpenTabs = Tabs.OfType<RepoViewModel>().Select(t => t.RepoPath).ToList();
-        Store.State.ActiveTab = (SelectedTab as RepoViewModel)?.RepoPath;
-        Store.Save();
+        _store.State.OpenTabs = Tabs.OfType<RepoViewModel>().Select(t => t.RepoPath).ToList();
+        _store.State.ActiveTab = (SelectedTab as RepoViewModel)?.RepoPath;
+        _store.Save();
     }
 
     public void Shutdown()

@@ -6,6 +6,7 @@ using GitPeach.Git;
 using GitPeach.Services;
 using GitPeach.ViewModels;
 using GitPeach.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GitPeach;
 
@@ -17,11 +18,13 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var store = new RepoStore();
+            var services = ConfigureServices();
+            var store = services.GetRequiredService<IAppStateStore>();
+            var runner = services.GetRequiredService<IGitRunner>();
             if (!string.IsNullOrWhiteSpace(store.State.GitPath) && File.Exists(store.State.GitPath))
-                GitRunner.GitExe = store.State.GitPath;
+                runner.GitExe = store.State.GitPath;
 
-            var vm = new MainWindowViewModel(store);
+            var vm = services.GetRequiredService<MainWindowViewModel>();
             // Invisible until placed, so the user never sees it jump from a default spot to the saved one.
             var window = new MainWindow { DataContext = vm, Opacity = 0, WindowStartupLocation = WindowStartupLocation.Manual };
             PlaceWindow(window, store.State, shown: false);
@@ -46,6 +49,33 @@ public partial class App : Application
             desktop.MainWindow = window;
         }
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>Composition root: the only place that knows the concrete implementations.</summary>
+    private static ServiceProvider ConfigureServices()
+    {
+        var windows = new WindowService()
+            .Register<DetailsViewModel>(() => new DiffWindow())
+            .Register<FileHistoryViewModel>(() => new FileHistoryWindow())
+            .Register<BlameViewModel>(() => new BlameWindow());
+
+        return new ServiceCollection()
+            // Infrastructure
+            .AddSingleton<IGitRunner, GitRunner>()
+            .AddSingleton<IGitHost, GitHost>()
+            .AddSingleton<IGitRepositoryFactory, GitRepositoryFactory>()
+            .AddSingleton<IAppStateStore, RepoStore>()
+            .AddSingleton<IRepoWatcherFactory, RepoWatcherFactory>()
+            // UI services
+            .AddSingleton<IDialogService, DialogService>()
+            .AddSingleton<IClipboardService, ClipboardService>()
+            .AddSingleton<IShellService, ShellService>()
+            .AddSingleton<IWindowService>(windows)
+            // View models
+            .AddSingleton<IRepoViewModelFactory, RepoViewModelFactory>()
+            .AddSingleton<HomeViewModel>()
+            .AddSingleton<MainWindowViewModel>()
+            .BuildServiceProvider();
     }
 
     /// <summary>

@@ -3,7 +3,7 @@
         xmlns:vm="using:GitPeach.ViewModels"
         xmlns:views="using:GitPeach.Views"
         x:Class="GitPeach.Views.DiffWindow"
-        x:DataType="vm:RepoViewModel"
+        x:DataType="vm:DetailsViewModel"
         Title="{Binding Title, StringFormat='{}{0} — Diff'}"
         Icon="/Assets/app.ico"
         Width="1100" Height="800" MinWidth="500" MinHeight="300"
@@ -20,6 +20,6 @@
             Padding="12,8" IsVisible="{Binding IsWipMode}">
       <TextBlock Classes="dim" Text="Working Tree — elige un archivo en la ventana principal; este diff se actualiza solo." />
     </Border>
-    <views:DiffListView x:Name="Diff" />
+    <views:DiffListView x:Name="Diff" DataContext="{Binding Diff}" />
   </DockPanel>
 </Window>

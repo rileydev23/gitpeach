@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GitPeach.ViewModels"
+        xmlns:views="using:GitPeach.Views"
+        x:Class="GitPeach.Views.FileHistoryWindow"
+        x:DataType="vm:FileHistoryViewModel"
+        Title="{Binding Title}"
+        Icon="/Assets/app.ico"
+        Width="1200" Height="800" MinWidth="600" MinHeight="300"
+        WindowStartupLocation="CenterOwner">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="12,8">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Content="Blame en esta versión" Command="{Binding BlameSelectedCommand}" />
+        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+          <TextBlock Text="{Binding FilePath}" FontWeight="SemiBold" />
+          <TextBlock Classes="dim" Text="{Binding Status}" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+    <Grid ColumnDefinitions="420,4,*">
+      <ListBox ItemsSource="{Binding Revisions}" SelectedItem="{Binding Selected}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:FileRevisionVM">
+            <StackPanel Margin="10,5" Spacing="2">
+              <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{Binding ShortHash}" Classes="dim mono" FontSize="11" />
+                <TextBlock Text="{Binding Author}" Classes="dim" FontSize="11" />
+                <TextBlock Text="{Binding DateText}" Classes="dim" FontSize="11" />
+                <TextBlock Text="{Binding PathNote}" Foreground="#9a7ae0" FontSize="11" IsVisible="{Binding HasPathNote}" />
+              </StackPanel>
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+      <DockPanel Grid.Column="2">
+        <Border DockPanel.Dock="Top" Background="#222327" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="10,6">
+          <SelectableTextBlock Text="{Binding Detail}" Classes="mono" FontSize="12" TextWrapping="Wrap" />
+        </Border>
+        <views:DiffListView DataContext="{Binding Diff}" />
+      </DockPanel>
+    </Grid>
+  </DockPanel>
+</Window>

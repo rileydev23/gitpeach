@@ -1,0 +1,32 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GitPeach.ViewModels"
+        x:Class="GitPeach.Views.BlameWindow"
+        x:DataType="vm:BlameViewModel"
+        Title="{Binding Title}"
+        Icon="/Assets/app.ico"
+        Width="1200" Height="800" MinWidth="600" MinHeight="300"
+        WindowStartupLocation="CenterOwner">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="12,8">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <TextBlock Text="{Binding FilePath}" FontWeight="SemiBold" />
+        <TextBlock Classes="dim" Text="{Binding Status}" />
+      </StackPanel>
+    </Border>
+    <ListBox Classes="diff" ItemsSource="{Binding Rows}" Background="#1b1c1f"
+             ScrollViewer.HorizontalScrollBarVisibility="Auto">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:BlameRowVM">
+          <Grid ColumnDefinitions="80,150,84,48,*" Background="{Binding Background}" ToolTip.Tip="{Binding Tooltip}">
+            <TextBlock Text="{Binding ShortHash}" Classes="mono" Foreground="#4a90d9" FontSize="12" Margin="8,0,0,0" />
+            <TextBlock Grid.Column="1" Text="{Binding Author}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,0,6,0" />
+            <TextBlock Grid.Column="2" Text="{Binding DateText}" Classes="dim" FontSize="12" />
+            <TextBlock Grid.Column="3" Text="{Binding LineNo}" Classes="dim mono" FontSize="12" HorizontalAlignment="Right" Margin="0,0,8,0" />
+            <TextBlock Grid.Column="4" Text="{Binding Text}" Classes="mono" FontSize="12" Foreground="#c8c8c8" />
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </DockPanel>
+</Window>

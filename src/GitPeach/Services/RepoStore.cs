@@ -30,7 +30,7 @@ public sealed class AppState
 [JsonSourceGenerationOptions(WriteIndented = true)]
 internal sealed partial class AppStateContext : JsonSerializerContext { }
 
-public sealed class RepoStore
+public sealed class RepoStore : IAppStateStore
 {
     private readonly string _file;
     private readonly object _lock = new();

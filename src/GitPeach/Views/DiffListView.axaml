@@ -2,9 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitPeach.ViewModels"
              x:Class="GitPeach.Views.DiffListView"
-             x:DataType="vm:RepoViewModel">
+             x:DataType="vm:DiffPaneViewModel">
   <Panel>
-    <ListBox x:Name="DiffList" Classes="diff" ItemsSource="{Binding DiffRows}"
+    <ListBox x:Name="DiffList" Classes="diff" ItemsSource="{Binding Rows}"
              ScrollViewer.HorizontalScrollBarVisibility="Auto" Background="#1b1c1f">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:DiffRowVM">
@@ -31,7 +31,7 @@
       </ListBox.ItemTemplate>
     </ListBox>
     <Button x:Name="PopOutButton" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,22,0"
-            Padding="8,2" FontSize="11" Content="⧉ Ventana" Click="OnPopOut"
+            Padding="8,2" FontSize="11" Content="⧉ Ventana" Command="{Binding PopOutCommand}" IsVisible="{Binding CanPopOut}"
             ToolTip.Tip="Abrir el diff en una ventana aparte" />
   </Panel>
 </UserControl>

@@ -1,5 +1,5 @@
+using System.ComponentModel;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using GitPeach.ViewModels;
@@ -17,68 +17,58 @@ public partial class RepoView : UserControl
 
         CommitList.ContainerPrepared += (_, e) =>
         {
-            if (_vm is not null && e.Index >= _vm.Commits.Count - 25) _ = _vm.LoadMoreAsync();
+            if (_vm is not null && e.Index >= _vm.History.Commits.Count - 25) _ = _vm.History.LoadMoreAsync();
         };
-        CommitList.ContextRequested += (_, e) =>
-        {
-            if (_vm is null || e.Source is not Control c) return;
-            var item = c.FindAncestorOfType<ListBoxItem>();
-            if (item?.DataContext is not CommitRowVM row || row.IsWip) { e.Handled = true; return; }
-            CommitList.SelectedItem = row;
-            ShowMenu(CommitList, _vm.ActionsFor(row), e);
-        };
-        SidebarList.ContextRequested += (_, e) =>
-        {
-            if (_vm is null || e.Source is not Control c) return;
-            var item = c.FindAncestorOfType<ListBoxItem>();
-            if (item?.DataContext is not SidebarItem si || si.IsHeader) { e.Handled = true; return; }
-            ShowMenu(SidebarList, _vm.ActionsFor(si), e);
-        };
+        MenuPresenter.Attach<CommitRowVM>(CommitList, row => _vm?.History.MenuFor(row) ?? Array.Empty<MenuAction>());
+        MenuPresenter.Attach<SidebarItem>(SidebarList, si => si.IsHeader || _vm is null ? Array.Empty<MenuAction>() : _vm.Sidebar.MenuFor(si), select: false);
+        MenuPresenter.Attach<FileEntryVM>(UnstagedList, f => _vm?.WorkingTree.MenuFor(f) ?? Array.Empty<MenuAction>());
+        MenuPresenter.Attach<FileEntryVM>(StagedList, f => _vm?.WorkingTree.MenuFor(f) ?? Array.Empty<MenuAction>());
+        MenuPresenter.Attach<CommitFileVM>(CommitFilesList, f =>
+            _vm?.Details.CurrentCommit is { } c ? _vm.WorkingTree.Files.MenuFor(f, c) : Array.Empty<MenuAction>());
+
         SidebarList.DoubleTapped += async (_, e) =>
         {
             if (_vm is null || e.Source is not Control c) return;
             if (c.FindAncestorOfType<ListBoxItem>()?.DataContext is SidebarItem { IsHeader: false } si)
-                await _vm.ActivateAsync(si);
+                await _vm.Sidebar.ActivateAsync(si);
         };
 
         DataContextChanged += (_, _) => Attach();
-        DetachedFromVisualTree += (_, _) => { };
     }
 
     private void Attach()
     {
         if (_vm is not null)
         {
-            _vm.ScrollToRowRequested -= OnScrollTo;
-            _vm.CommitMessageFocusRequested -= OnFocusMessage;
-            _vm.PropertyChanged -= OnVmPropertyChanged;
+            _vm.WorkingTree.CommitMessageFocusRequested -= OnFocusMessage;
+            _vm.History.FocusSearchRequested -= OnFocusSearch;
+            _vm.Details.PropertyChanged -= OnDetailsChanged;
+            _vm.Log.PropertyChanged -= OnLogChanged;
         }
         _vm = DataContext as RepoViewModel;
         if (_vm is not null)
         {
-            _vm.ScrollToRowRequested += OnScrollTo;
-            _vm.CommitMessageFocusRequested += OnFocusMessage;
-            _vm.PropertyChanged += OnVmPropertyChanged;
-            SetTopHeight(_vm.IsWipMode);
+            _vm.WorkingTree.CommitMessageFocusRequested += OnFocusMessage;
+            _vm.History.FocusSearchRequested += OnFocusSearch;
+            _vm.Details.PropertyChanged += OnDetailsChanged;
+            _vm.Log.PropertyChanged += OnLogChanged;
+            SetTopHeight(_vm.Details.IsWipMode);
         }
     }
 
-    private void OnVmPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnDetailsChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(RepoViewModel.IsWipMode) && _vm is not null)
-        {
-            // Remember the height the user chose for the mode we are leaving.
-            var h = RightGrid.RowDefinitions[0].Height.Value;
-            if (_vm.IsWipMode) _commitTop = h; else _wipTop = h;
-            SetTopHeight(_vm.IsWipMode);
-        }
-        else if (e.PropertyName == nameof(RepoViewModel.CommandLog))
+        if (e.PropertyName != nameof(DetailsViewModel.IsWipMode) || _vm is null) return;
+        // Remember the height the user chose for the mode we are leaving.
+        var h = RightGrid.RowDefinitions[0].Height.Value;
+        if (_vm.Details.IsWipMode) _commitTop = h; else _wipTop = h;
+        SetTopHeight(_vm.Details.IsWipMode);
+    }
+
+    private void OnLogChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CommandLogViewModel.Text))
             Dispatcher.UIThread.Post(() => LogBox.CaretIndex = int.MaxValue, DispatcherPriority.Background);
-    }
-
-    private void OnScrollTo(DiffRowVM row)
-    {
-        DiffView.ScrollToRow(row);
     }
 
     private void SetTopHeight(bool wip)
@@ -90,19 +80,9 @@ public partial class RepoView : UserControl
 
     private void OnFocusMessage() => MessageBox.Focus();
 
-    private static void ShowMenu(Control target, IReadOnlyList<(string Header, Func<Task> Action)> actions, ContextRequestedEventArgs e)
+    private void OnFocusSearch()
     {
-        if (actions.Count == 0) { e.Handled = true; return; }
-        var menu = new ContextMenu();
-        var items = new List<MenuItem>();
-        foreach (var (header, action) in actions)
-        {
-            var mi = new MenuItem { Header = header };
-            mi.Click += async (_, _) => await action();
-            items.Add(mi);
-        }
-        menu.ItemsSource = items;
-        menu.Open(target);
-        e.Handled = true;
+        SearchBox.Focus();
+        SearchBox.SelectAll();
     }
 }

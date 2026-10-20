@@ -7,8 +7,17 @@
              x:DataType="vm:RepoViewModel">
   <UserControl.KeyBindings>
     <KeyBinding Gesture="F5" Command="{Binding RefreshCommand}" />
+    <KeyBinding Gesture="Ctrl+F" Command="{Binding History.FocusSearchCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding FetchCommand}" />
-    <KeyBinding Gesture="Ctrl+Enter" Command="{Binding CommitChangesCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+L" Command="{Binding PullCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+P" Command="{Binding PushCommand}" />
+    <KeyBinding Gesture="Ctrl+B" Command="{Binding NewBranchCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding StashCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+O" Command="{Binding PopCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+A" Command="{Binding WorkingTree.StageAllCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+U" Command="{Binding WorkingTree.UnstageAllCommand}" />
+    <KeyBinding Gesture="Ctrl+Enter" Command="{Binding WorkingTree.CommitChangesCommand}" />
+    <KeyBinding Gesture="Ctrl+L" Command="{Binding Log.ToggleCommand}" />
   </UserControl.KeyBindings>
 
   <DockPanel>
@@ -21,15 +30,33 @@
           <Button Content="Terminal" Command="{Binding OpenInTerminalCommand}" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="4">
-          <Button Content="Fetch" Command="{Binding FetchCommand}" IsEnabled="{Binding !IsBusy}" />
-          <Button Content="Pull" Command="{Binding PullCommand}" IsEnabled="{Binding !IsBusy}" />
-          <Button Content="Push" Command="{Binding PushCommand}" IsEnabled="{Binding !IsBusy}" />
+          <Button Content="Fetch" Command="{Binding FetchCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Fetch de todos los remotos (Ctrl+Shift+F)" />
+          <SplitButton Content="Pull" Command="{Binding PullCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Pull (Ctrl+Shift+L)">
+            <SplitButton.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="Pull (según la configuración de git)" Command="{Binding PullCommand}" InputGesture="Ctrl+Shift+L" />
+                <MenuItem Header="Pull con rebase" Command="{Binding PullRebaseCommand}" />
+                <MenuItem Header="Pull solo fast-forward" Command="{Binding PullFastForwardCommand}" />
+              </MenuFlyout>
+            </SplitButton.Flyout>
+          </SplitButton>
+          <SplitButton Content="Push" Command="{Binding PushCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Push de la rama actual (Ctrl+Shift+P)">
+            <SplitButton.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="Push" Command="{Binding PushCommand}" InputGesture="Ctrl+Shift+P" />
+                <MenuItem Header="Push a otro remoto…" Command="{Binding PushToRemoteCommand}" />
+                <MenuItem Header="Push de todos los tags…" Command="{Binding PushTagsCommand}" />
+                <Separator />
+                <MenuItem Header="Push forzado (--force-with-lease)…" Command="{Binding PushForceCommand}" />
+              </MenuFlyout>
+            </SplitButton.Flyout>
+          </SplitButton>
           <Border Width="1" Background="#3a3c42" Margin="6,2" />
-          <Button Content="Nueva rama" Command="{Binding NewBranchCommand}" />
-          <Button Content="Stash" Command="{Binding StashCommand}" />
-          <Button Content="Pop" Command="{Binding PopCommand}" />
+          <Button Content="Nueva rama" Command="{Binding NewBranchCommand}" ToolTip.Tip="Nueva rama desde HEAD (Ctrl+B)" />
+          <Button Content="Stash" Command="{Binding StashCommand}" ToolTip.Tip="Guardar cambios en un stash (Ctrl+Shift+S)" />
+          <Button Content="Pop" Command="{Binding PopCommand}" ToolTip.Tip="Aplicar y quitar el último stash (Ctrl+Shift+O)" />
           <Border Width="1" Background="#3a3c42" Margin="6,2" />
-          <Button Content="Refrescar" Command="{Binding RefreshCommand}" />
+          <Button Content="Refrescar" Command="{Binding RefreshCommand}" ToolTip.Tip="F5" />
           <TextBlock Text="{Binding BranchText}" FontWeight="SemiBold" Foreground="#6cc070" VerticalAlignment="Center" Margin="14,0,0,0" />
           <TextBlock Text="{Binding TrackText}" Foreground="#e0a24a" VerticalAlignment="Center" Margin="6,0,0,0" />
         </StackPanel>
@@ -43,14 +70,17 @@
           <Button Content="Continuar" Command="{Binding ContinueOperationCommand}" />
           <Button Content="Abortar" Command="{Binding AbortOperationCommand}" />
         </StackPanel>
-        <TextBlock Text="{Binding OperationText}" VerticalAlignment="Center" FontWeight="SemiBold" />
+        <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+          <TextBlock Text="{Binding OperationText}" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding WorkingTree.ConflictText}" IsVisible="{Binding WorkingTree.HasConflicts}" Foreground="#f0c890" />
+        </StackPanel>
       </DockPanel>
     </Border>
 
     <!-- Status bar -->
     <Border DockPanel.Dock="Bottom" Background="#18191c" BorderBrush="#3a3c42" BorderThickness="0,1,0,0" Padding="10,3">
       <DockPanel>
-        <Button DockPanel.Dock="Right" Classes="flat" Content="Log de comandos" Command="{Binding ToggleLogCommand}" Foreground="#8a8d93" />
+        <Button DockPanel.Dock="Right" Classes="flat" Content="Log de comandos" Command="{Binding Log.ToggleCommand}" Foreground="#8a8d93" ToolTip.Tip="Ctrl+L" />
         <ProgressBar DockPanel.Dock="Right" IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="100" Height="6" Margin="0,0,10,0" />
         <TextBlock Classes="dim" Text="{Binding BusyText}" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
         <TextBlock Classes="dim" Text="{Binding Notice}" IsVisible="{Binding !IsBusy}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -59,10 +89,10 @@
 
     <!-- Command log -->
     <Border DockPanel.Dock="Bottom" Background="#18191c" BorderBrush="#3a3c42" BorderThickness="0,1,0,0"
-            Height="170" IsVisible="{Binding ShowLog}">
+            Height="170" IsVisible="{Binding Log.IsVisible}">
       <DockPanel>
-        <Button DockPanel.Dock="Right" VerticalAlignment="Top" Classes="flat" Content="Limpiar" Command="{Binding ClearLogCommand}" />
-        <TextBox x:Name="LogBox" Text="{Binding CommandLog, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+        <Button DockPanel.Dock="Right" VerticalAlignment="Top" Classes="flat" Content="Limpiar" Command="{Binding Log.ClearCommand}" />
+        <TextBox x:Name="LogBox" Text="{Binding Log.Text, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
                  BorderThickness="0" Background="Transparent" FontFamily="Consolas, Cascadia Mono" FontSize="12" />
       </DockPanel>
     </Border>
@@ -77,7 +107,7 @@
       </Grid.ColumnDefinitions>
       <!-- Sidebar -->
       <Border Background="#222327">
-        <ListBox x:Name="SidebarList" ItemsSource="{Binding Sidebar}">
+        <ListBox x:Name="SidebarList" ItemsSource="{Binding Sidebar.Items}">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:SidebarItem">
               <DockPanel Margin="{Binding Pad}">
@@ -91,45 +121,63 @@
       </Border>
       <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
 
-      <!-- Commit list -->
-      <ListBox x:Name="CommitList" Grid.Column="2" ItemsSource="{Binding Commits}" SelectedItem="{Binding SelectedCommitRow}">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="vm:CommitRowVM">
-            <Grid ColumnDefinitions="Auto,*,100,125" Height="24">
-              <c:GraphCell Row="{Binding Graph}" IsWip="{Binding IsWip}" Width="{Binding Metrics.PixelWidth}" Height="24" />
-              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" ClipToBounds="True">
-                <ItemsControl ItemsSource="{Binding Badges}" IsVisible="{Binding HasBadges}" VerticalAlignment="Center">
-                  <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4" /></ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:RefBadge">
-                      <Border Background="{Binding Background}" CornerRadius="3" Padding="5,1">
-                        <TextBlock Text="{Binding Text}" FontSize="11" Foreground="White" />
-                      </Border>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <TextBlock Text="{Binding Subject}" FontWeight="{Binding Weight}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-              </StackPanel>
-              <TextBlock Grid.Column="2" Text="{Binding Author}" Classes="dim" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="8,0,4,0" />
-              <TextBlock Grid.Column="3" Text="{Binding DateText}" Classes="dim" VerticalAlignment="Center" />
-            </Grid>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+      <!-- Commit list with search -->
+      <DockPanel Grid.Column="2">
+        <Border DockPanel.Dock="Top" Background="#222327" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="6,4">
+          <DockPanel>
+            <ComboBox DockPanel.Dock="Left" ItemsSource="{x:Static vm:HistoryViewModel.SearchModes}"
+                      SelectedIndex="{Binding History.SearchModeIndex}" Width="118" Margin="0,0,6,0"
+                      ToolTip.Tip="Qué buscar" />
+            <Button DockPanel.Dock="Right" Classes="flat" Content="✕" Command="{Binding History.ClearSearchCommand}"
+                    IsVisible="{Binding History.IsSearching}" ToolTip.Tip="Limpiar búsqueda (Esc)" />
+            <TextBlock DockPanel.Dock="Right" Classes="dim" Text="{Binding History.SearchStatus}" VerticalAlignment="Center"
+                       Margin="8,0" IsVisible="{Binding History.IsSearching}" />
+            <TextBox x:Name="SearchBox" Text="{Binding History.SearchText}" Watermark="Buscar en el historial (Ctrl+F)">
+              <TextBox.KeyBindings>
+                <KeyBinding Gesture="Escape" Command="{Binding History.ClearSearchCommand}" />
+              </TextBox.KeyBindings>
+            </TextBox>
+          </DockPanel>
+        </Border>
+        <ListBox x:Name="CommitList" ItemsSource="{Binding History.Commits}" SelectedItem="{Binding History.SelectedCommitRow}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:CommitRowVM">
+              <Grid ColumnDefinitions="Auto,*,100,125" Height="24">
+                <c:GraphCell Row="{Binding Graph}" IsWip="{Binding IsWip}" Width="{Binding Metrics.PixelWidth}" Height="24" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" ClipToBounds="True">
+                  <ItemsControl ItemsSource="{Binding Badges}" IsVisible="{Binding HasBadges}" VerticalAlignment="Center">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:RefBadge">
+                        <Border Background="{Binding Background}" CornerRadius="3" Padding="5,1">
+                          <TextBlock Text="{Binding Text}" FontSize="11" Foreground="White" />
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Text="{Binding Subject}" FontWeight="{Binding Weight}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text="{Binding Author}" Classes="dim" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="8,0,4,0" />
+                <TextBlock Grid.Column="3" Text="{Binding DateText}" Classes="dim" VerticalAlignment="Center" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
       <GridSplitter Grid.Column="3" ResizeDirection="Columns" />
 
       <!-- Right pane -->
       <Grid x:Name="RightGrid" Grid.Column="4" RowDefinitions="360,4,*">
         <Grid x:Name="TopArea">
           <!-- Working tree mode -->
-          <Grid RowDefinitions="Auto,*,Auto,*,Auto" IsVisible="{Binding IsWipMode}">
+          <Grid RowDefinitions="Auto,*,Auto,*,Auto" IsVisible="{Binding Details.IsWipMode}">
             <DockPanel Margin="8,6">
-              <Button DockPanel.Dock="Right" Classes="flat" Content="Stage todo" Command="{Binding StageAllCommand}" />
-              <TextBlock Text="{Binding Unstaged.Count, StringFormat='Cambios sin stage ({0})'}" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <Button DockPanel.Dock="Right" Classes="flat" Content="Stage todo" Command="{Binding WorkingTree.StageAllCommand}" ToolTip.Tip="Ctrl+Shift+A" />
+              <TextBlock Text="{Binding WorkingTree.Unstaged.Count, StringFormat='Cambios sin stage ({0})'}" FontWeight="SemiBold" VerticalAlignment="Center" />
             </DockPanel>
-            <ListBox Grid.Row="1" ItemsSource="{Binding Unstaged}" SelectedItem="{Binding SelectedUnstaged}">
+            <ListBox x:Name="UnstagedList" Grid.Row="1" ItemsSource="{Binding WorkingTree.Unstaged}" SelectedItem="{Binding WorkingTree.SelectedUnstaged}">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:FileEntryVM">
                   <Grid ColumnDefinitions="22,*,Auto" Margin="8,2">
@@ -137,9 +185,10 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" ClipToBounds="True">
                       <TextBlock Text="{Binding Directory}" Classes="dim" />
                       <TextBlock Text="{Binding FileName}" />
+                      <TextBlock Text="  conflicto" Foreground="#e0a24a" FontSize="11" VerticalAlignment="Center" IsVisible="{Binding IsConflict}" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
-                      <Button Classes="flat" Content="↶" Command="{Binding DiscardCommand}" ToolTip.Tip="Descartar" />
+                      <Button Classes="flat" Content="↶" Command="{Binding DiscardCommand}" ToolTip.Tip="Descartar" IsVisible="{Binding !IsConflict}" />
                       <Button Classes="flat" Content="{Binding PrimaryText}" Command="{Binding PrimaryCommand}" ToolTip.Tip="Stage" FontWeight="Bold" />
                     </StackPanel>
                   </Grid>
@@ -147,10 +196,10 @@
               </ListBox.ItemTemplate>
             </ListBox>
             <DockPanel Grid.Row="2" Margin="8,6">
-              <Button DockPanel.Dock="Right" Classes="flat" Content="Unstage todo" Command="{Binding UnstageAllCommand}" />
-              <TextBlock Text="{Binding Staged.Count, StringFormat='Cambios en stage ({0})'}" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <Button DockPanel.Dock="Right" Classes="flat" Content="Unstage todo" Command="{Binding WorkingTree.UnstageAllCommand}" ToolTip.Tip="Ctrl+Shift+U" />
+              <TextBlock Text="{Binding WorkingTree.Staged.Count, StringFormat='Cambios en stage ({0})'}" FontWeight="SemiBold" VerticalAlignment="Center" />
             </DockPanel>
-            <ListBox Grid.Row="3" ItemsSource="{Binding Staged}" SelectedItem="{Binding SelectedStaged}">
+            <ListBox x:Name="StagedList" Grid.Row="3" ItemsSource="{Binding WorkingTree.Staged}" SelectedItem="{Binding WorkingTree.SelectedStaged}">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:FileEntryVM">
                   <Grid ColumnDefinitions="22,*,Auto" Margin="8,2">
@@ -166,23 +215,23 @@
             </ListBox>
             <Border Grid.Row="4" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,1,0,0" Padding="8">
               <StackPanel Spacing="6">
-                <TextBox x:Name="MessageBox" Text="{Binding CommitMessage}" AcceptsReturn="True" TextWrapping="Wrap"
+                <TextBox x:Name="MessageBox" Text="{Binding WorkingTree.CommitMessage}" AcceptsReturn="True" TextWrapping="Wrap"
                          Height="70" Watermark="Mensaje de commit (Ctrl+Enter para confirmar)" />
                 <DockPanel>
-                  <Button DockPanel.Dock="Right" Classes="accent" Content="Commit" Command="{Binding CommitChangesCommand}" Padding="18,5" />
-                  <CheckBox Content="Amend (modificar último commit)" IsChecked="{Binding Amend}" />
+                  <Button DockPanel.Dock="Right" Classes="accent" Content="Commit" Command="{Binding WorkingTree.CommitChangesCommand}" Padding="18,5" ToolTip.Tip="Ctrl+Enter" />
+                  <CheckBox Content="Amend (modificar último commit)" IsChecked="{Binding WorkingTree.Amend}" />
                 </DockPanel>
               </StackPanel>
             </Border>
           </Grid>
 
           <!-- Commit mode -->
-          <Grid RowDefinitions="Auto,*" IsVisible="{Binding !IsWipMode}">
+          <Grid RowDefinitions="Auto,*" IsVisible="{Binding !Details.IsWipMode}">
             <StackPanel Margin="10,8" Spacing="6">
-              <TextBlock Text="{Binding DetailMessage}" TextWrapping="Wrap" FontWeight="SemiBold" FontSize="14" MaxHeight="110" />
-              <TextBlock Text="{Binding DetailMeta}" Classes="dim mono" FontSize="12" />
+              <SelectableTextBlock Text="{Binding Details.DetailMessage}" TextWrapping="Wrap" FontWeight="SemiBold" FontSize="14" MaxHeight="110" />
+              <SelectableTextBlock Text="{Binding Details.DetailMeta}" Classes="mono" Foreground="#8a8d93" FontSize="12" />
             </StackPanel>
-            <ListBox Grid.Row="1" ItemsSource="{Binding CommitFiles}" SelectedItem="{Binding SelectedCommitFile}">
+            <ListBox x:Name="CommitFilesList" Grid.Row="1" ItemsSource="{Binding Details.CommitFiles}" SelectedItem="{Binding Details.SelectedCommitFile}">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:CommitFileVM">
                   <Grid ColumnDefinitions="22,*" Margin="8,2">
@@ -199,7 +248,7 @@
         </Grid>
         <GridSplitter Grid.Row="1" ResizeDirection="Rows" />
 
-        <views:DiffListView Grid.Row="2" x:Name="DiffView" />
+        <views:DiffListView Grid.Row="2" DataContext="{Binding Details.Diff}" />
       </Grid>
     </Grid>
   </DockPanel>
