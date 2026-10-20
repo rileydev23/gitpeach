@@ -58,23 +58,23 @@ public sealed class DialogService : IDialogService
         return panel;
     }
 
-    public async Task<bool> Confirm(string title, string message, string ok = "Aceptar")
+    public async Task<bool> Confirm(string title, string message, string ok = "Aceptar", string cancel = "Cancelar")
     {
         var owner = Owner;
         if (owner is null) return false;
         var w = Make(title, 440);
         bool result = false;
         var okBtn = Btn(ok, true);
-        var cancel = Btn("Cancelar");
+        var cancelBtn = Btn(cancel);
         okBtn.Click += (_, _) => { result = true; w.Close(); };
-        cancel.Click += (_, _) => w.Close();
+        cancelBtn.Click += (_, _) => w.Close();
         w.Content = new StackPanel
         {
             Margin = new Thickness(18), Spacing = 6,
             Children =
             {
                 new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap, Foreground = Palette.Text },
-                Buttons(okBtn, cancel),
+                Buttons(okBtn, cancelBtn),
             },
         };
         w.KeyDown += (_, e) => { if (e.Key == Key.Escape) w.Close(); };
@@ -94,9 +94,85 @@ public sealed class DialogService : IDialogService
             Margin = new Thickness(18), Spacing = 6,
             Children =
             {
-                new TextBox { Text = message, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, MaxHeight = 420,
-                    Background = Palette.Bg, BorderThickness = new Thickness(0), FontFamily = new FontFamily("Consolas") },
+                // Display-only text is a TextBlock: no caret, no focus border, nothing that looks editable.
+                new ScrollViewer
+                {
+                    MaxHeight = 420,
+                    HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+                    Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap, Foreground = Palette.Text },
+                },
                 Buttons(ok),
+            },
+        };
+        w.KeyDown += (_, e) => { if (e.Key is Key.Escape or Key.Enter) w.Close(); };
+        await w.ShowDialog(owner);
+    }
+
+    public async Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups)
+    {
+        var owner = Owner;
+        if (owner is null) return;
+        var w = Make("Acerca de GitPeach", 520);
+        var version = typeof(DialogService).Assembly.GetName().Version;
+        var close = Btn("Cerrar", true);
+        close.Click += (_, _) => w.Close();
+
+        var header = new DockPanel();
+        var logo = new Image
+        {
+            Source = new Avalonia.Media.Imaging.Bitmap(Avalonia.Platform.AssetLoader.Open(new Uri("avares://GitPeach/Assets/icon64.png"))),
+            Width = 48, Height = 48, Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Top,
+        };
+        DockPanel.SetDock(logo, Dock.Left);
+        header.Children.Add(logo);
+        header.Children.Add(new StackPanel
+        {
+            Spacing = 2,
+            Children =
+            {
+                new TextBlock { Text = "GitPeach", FontSize = 18, FontWeight = FontWeight.SemiBold, Foreground = Palette.Text },
+                new TextBlock { Text = $"Versión {version?.ToString(3)}", Foreground = Palette.Dim, FontSize = 12 },
+                new TextBlock { Text = description, Foreground = Palette.Text, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 6, 0, 0) },
+            },
+        });
+
+        // Shortcuts as a plain two-column table (never a TextBox: this is read-only information).
+        var shortcuts = new StackPanel { Spacing = 2 };
+        foreach (var (title, items) in shortcutGroups)
+        {
+            shortcuts.Children.Add(new TextBlock
+            {
+                Text = title, FontWeight = FontWeight.SemiBold, Foreground = Palette.Text,
+                Margin = new Thickness(0, shortcuts.Children.Count == 0 ? 0 : 10, 0, 4),
+            });
+            foreach (var (gesture, desc) in items)
+            {
+                var row = new Grid { ColumnDefinitions = new ColumnDefinitions("215,*") };
+                row.Children.Add(new TextBlock { Text = gesture, Foreground = Palette.Dim, FontSize = 12, FontFamily = new FontFamily("Cascadia Mono, Consolas") });
+                var d = new TextBlock { Text = desc, Foreground = Palette.Text, FontSize = 12, TextWrapping = TextWrapping.Wrap };
+                Grid.SetColumn(d, 1);
+                row.Children.Add(d);
+                shortcuts.Children.Add(row);
+            }
+        }
+
+        w.Content = new StackPanel
+        {
+            Margin = new Thickness(18), Spacing = 14,
+            Children =
+            {
+                header,
+                new Border { Height = 1, Background = Palette.Border },
+                new TextBlock { Text = "Atajos de teclado", FontSize = 14, FontWeight = FontWeight.SemiBold, Foreground = Palette.Text },
+                new ScrollViewer
+                {
+                    MaxHeight = 380,
+                    HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+                    Content = shortcuts,
+                },
+                new Border { Height = 1, Background = Palette.Border },
+                new TextBlock { Text = "Datos guardados en: " + dataFolder, Foreground = Palette.Dim, FontSize = 11, TextWrapping = TextWrapping.Wrap },
+                new StackPanel { HorizontalAlignment = HorizontalAlignment.Right, Children = { close } },
             },
         };
         w.KeyDown += (_, e) => { if (e.Key is Key.Escape or Key.Enter) w.Close(); };

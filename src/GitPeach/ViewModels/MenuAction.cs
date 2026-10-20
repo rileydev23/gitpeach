@@ -2,15 +2,20 @@ namespace GitPeach.ViewModels;
 
 /// <summary>
 /// A context-menu entry produced by a view model (command pattern): the view only renders it,
-/// all behaviour lives in <see cref="Run"/>.
+/// all behaviour lives in <see cref="Run"/>. Entries with <see cref="Children"/> are submenus.
 /// </summary>
 public sealed record MenuAction(string Header, Func<Task>? Run = null, string? Gesture = null)
 {
     public static readonly MenuAction Separator = new("-");
-    public bool IsSeparator => Run is null;
+
+    public IReadOnlyList<MenuAction>? Children { get; init; }
+    public bool IsSeparator => Run is null && Children is null;
 
     public static MenuAction Sync(string header, Action run, string? gesture = null)
         => new(header, () => { run(); return Task.CompletedTask; }, gesture);
+
+    public static MenuAction Submenu(string header, IReadOnlyList<MenuAction> children)
+        => new(header) { Children = children };
 }
 
 internal static class MenuList

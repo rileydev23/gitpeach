@@ -13,7 +13,10 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly bool _ready;
 
     public HomeViewModel Home { get; }
+    /// <summary>Every tab, Home first (order used by Ctrl+Tab and Ctrl+1..9).</summary>
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
+    /// <summary>Repository tabs only: the tab strip. Home has its own button.</summary>
+    public ObservableCollection<RepoViewModel> RepoTabs { get; } = new();
 
     [ObservableProperty] private TabViewModel? _selectedTab;
 
@@ -56,6 +59,7 @@ public partial class MainWindowViewModel : ObservableObject
         var tab = _repos.Create(path);
         tab.CloseCommand = new RelayCommand(() => CloseTab(tab));
         Tabs.Add(tab);
+        RepoTabs.Add(tab);
         if (select) SelectedTab = tab;
     }
 
@@ -64,6 +68,7 @@ public partial class MainWindowViewModel : ObservableObject
         if (!tab.Closable) return;
         int idx = Tabs.IndexOf(tab);
         Tabs.Remove(tab);
+        if (tab is RepoViewModel repo) RepoTabs.Remove(repo);
         (tab as IDisposable)?.Dispose();
         if (SelectedTab == tab || SelectedTab is null)
             SelectedTab = Tabs[Math.Clamp(idx - 1, 0, Tabs.Count - 1)];
@@ -106,10 +111,24 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task ShowShortcuts() => _dialogs.Message("Atajos de teclado", Shortcuts.Describe());
+    private Task ShowAbout() => _dialogs.About(Shortcuts.AboutText, _store.DataFolder, Shortcuts.Groups);
+
+    public bool IsHomeSelected => SelectedTab == Home;
+
+    /// <summary>Selection of the tab strip; null while Home is shown (a null coming back from the strip is ignored).</summary>
+    public RepoViewModel? SelectedRepoTab
+    {
+        get => SelectedTab as RepoViewModel;
+        set { if (value is not null) SelectedTab = value; }
+    }
+
+    [RelayCommand]
+    private void ShowHome() => SelectedTab = Home;
 
     partial void OnSelectedTabChanged(TabViewModel? value)
     {
+        OnPropertyChanged(nameof(IsHomeSelected));
+        OnPropertyChanged(nameof(SelectedRepoTab));
         if (_ready) SaveTabs();
     }
 

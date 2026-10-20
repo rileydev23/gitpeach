@@ -18,8 +18,18 @@ public sealed class ShellService : IShellService
     public void OpenTerminal(string directory) =>
         Start(new ProcessStartInfo("cmd.exe") { WorkingDirectory = directory, UseShellExecute = true });
 
-    public void OpenInEditor(string path) =>
-        Start(new ProcessStartInfo("cmd.exe", $"/c code \"{path}\"") { CreateNoWindow = true, UseShellExecute = false });
+    public bool OpenInTextPeach(string folder, string? file = null)
+    {
+        var exe = TextPeachLocator.FindOnThisMachine();
+        if (exe is null) return false;
+        var psi = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = folder };
+        psi.ArgumentList.Add(folder);
+        if (file is not null) psi.ArgumentList.Add(file);
+        Start(psi);
+        return true;
+    }
+
+    public void OpenUrl(string url) => Start(new ProcessStartInfo(url) { UseShellExecute = true });
 
     private static void Start(ProcessStartInfo psi)
     {

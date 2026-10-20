@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitPeach.ViewModels"
-             xmlns:svc="using:GitPeach.Services"
              x:Class="GitPeach.Views.HomeView"
              x:DataType="vm:HomeViewModel">
   <DockPanel>
@@ -9,11 +8,17 @@
       <DockPanel LastChildFill="True">
         <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="6">
           <Button Classes="accent" Content="Agregar repositorio..." Command="{Binding AddCommand}" />
-          <Button Content="Escanear carpeta..." Command="{Binding ScanCommand}" />
+          <Button Content="Escanear carpeta..." Command="{Binding ScanCommand}"
+                  ToolTip.Tip="Busca los repositorios dentro de una carpeta y los agrupa con el nombre de esa carpeta" />
           <Button Content="Clonar..." Command="{Binding CloneCommand}" />
+          <Button Content="Nuevo grupo..." Command="{Binding NewGroupCommand}" />
           <Button Content="Actualizar" Command="{Binding RefreshCommand}" />
         </StackPanel>
-        <ToggleButton DockPanel.Dock="Right" Content="★ Favoritos" IsChecked="{Binding OnlyFavorites}" Margin="6,0,0,0" />
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" Margin="6,0,0,0">
+          <Button Classes="flat" Content="▾ Expandir" Command="{Binding ExpandAllCommand}" ToolTip.Tip="Expandir todos los grupos" />
+          <Button Classes="flat" Content="▸ Contraer" Command="{Binding CollapseAllCommand}" ToolTip.Tip="Contraer todos los grupos" />
+          <ToggleButton Content="★ Favoritos" IsChecked="{Binding OnlyFavorites}" />
+        </StackPanel>
         <TextBox Text="{Binding Filter}" Watermark="Filtrar repositorios..." Margin="12,0,0,0" x:Name="FilterBox" />
       </DockPanel>
     </Border>
@@ -26,34 +31,41 @@
     </Border>
 
     <Grid>
-      <ListBox x:Name="RepoList" ItemsSource="{Binding Repos}" SelectedItem="{Binding Selected}">
-        <ListBox.ContextMenu>
-          <ContextMenu>
-            <MenuItem Header="Abrir" Command="{Binding OpenCommand}" />
-            <MenuItem Header="Favorito (alternar)" Command="{Binding ToggleFavoriteCommand}" />
-            <MenuItem Header="Abrir en el Explorador" Command="{Binding OpenInExplorerCommand}" />
-            <MenuItem Header="Abrir terminal aquí" Command="{Binding OpenInTerminalCommand}" />
-            <Separator />
-            <MenuItem Header="Quitar de la lista" Command="{Binding RemoveCommand}" />
-          </ContextMenu>
-        </ListBox.ContextMenu>
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="svc:RepoEntry">
-            <Grid ColumnDefinitions="28,*,Auto" Margin="10,8">
-              <TextBlock Text="★" Foreground="#e0a24a" IsVisible="{Binding Favorite}" VerticalAlignment="Center" />
+      <ListBox x:Name="RepoList" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}" SelectionMode="Multiple">
+        <ListBox.DataTemplates>
+          <DataTemplate DataType="vm:GroupHeaderRow" x:DataType="vm:GroupHeaderRow">
+            <Border Background="#222327" BorderBrush="#3a3c42" BorderThickness="0,1,0,1" Padding="4,2">
+              <DockPanel>
+                <Button DockPanel.Dock="Right" Classes="flat" Content="Abrir todos" Command="{Binding OpenAllCommand}"
+                        IsVisible="{Binding CanOpenAll}" Foreground="#8a8d93" VerticalAlignment="Center"
+                        ToolTip.Tip="Abrir todos los repositorios del grupo en pestañas" />
+                <Button Classes="flat" Command="{Binding ToggleCommand}" HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left" Padding="4,4">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding Chevron}" Width="14" FontSize="16" Foreground="#8a8d93" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding CountText}" Classes="dim" FontSize="12" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
+              </DockPanel>
+            </Border>
+          </DataTemplate>
+          <DataTemplate DataType="vm:RepoRow" x:DataType="vm:RepoRow">
+            <Grid ColumnDefinitions="28,*,Auto" Margin="{Binding Pad}">
+              <TextBlock Text="★" Foreground="#e0a24a" IsVisible="{Binding Entry.Favorite}" VerticalAlignment="Center" />
               <StackPanel Grid.Column="1" Spacing="2">
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" />
-                  <TextBlock Text="{Binding Branch}" Foreground="#6cc070" VerticalAlignment="Center" />
-                  <TextBlock Text="(carpeta no encontrada)" Foreground="#e0645a" IsVisible="{Binding Missing}" />
+                  <TextBlock Text="{Binding Entry.Name}" FontWeight="SemiBold" FontSize="14" />
+                  <TextBlock Text="{Binding Entry.Branch}" Foreground="#6cc070" VerticalAlignment="Center" />
+                  <TextBlock Text="(carpeta no encontrada)" Foreground="#e0645a" IsVisible="{Binding Entry.Missing}" />
                 </StackPanel>
-                <TextBlock Text="{Binding Path}" Classes="dim" FontSize="12" />
+                <TextBlock Text="{Binding Entry.Path}" Classes="dim" FontSize="12" />
               </StackPanel>
               <TextBlock Grid.Column="2" Classes="dim" VerticalAlignment="Center"
-                         Text="{Binding LastOpened, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
+                         Text="{Binding Entry.LastOpened, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" />
             </Grid>
           </DataTemplate>
-        </ListBox.ItemTemplate>
+        </ListBox.DataTemplates>
       </ListBox>
 
       <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6" IsHitTestVisible="False"

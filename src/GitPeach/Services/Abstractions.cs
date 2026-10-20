@@ -5,8 +5,10 @@ namespace GitPeach.Services;
 
 public interface IDialogService
 {
-    Task<bool> Confirm(string title, string message, string ok = "Aceptar");
+    Task<bool> Confirm(string title, string message, string ok = "Aceptar", string cancel = "Cancelar");
     Task Message(string title, string message);
+    /// <summary>F1 / "?": app name, version and description, then the keyboard shortcuts.</summary>
+    Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups);
     Task<string?> Prompt(string title, string label, string initial = "");
     Task<string[]?> Form(string title, (string Label, string Initial)[] fields, string ok = "Aceptar");
     /// <summary>Lets the user pick one of <paramref name="options"/>; null when cancelled.</summary>
@@ -20,14 +22,16 @@ public interface IClipboardService
     Task SetTextAsync(string text);
 }
 
-/// <summary>Launches external programs (Explorer, terminal, editor, default app).</summary>
+/// <summary>Launches external programs (Explorer, terminal, TextPeach, default app, browser).</summary>
 public interface IShellService
 {
     void OpenFolder(string path);
     void RevealInExplorer(string path);
     void OpenFile(string path);
     void OpenTerminal(string directory);
-    void OpenInEditor(string path);
+    /// <summary>Opens a folder (and optionally one of its files) in TextPeach. False when TextPeach is not installed.</summary>
+    bool OpenInTextPeach(string folder, string? file = null);
+    void OpenUrl(string url);
 }
 
 /// <summary>Opens a view model in its own window (the view is resolved by convention).</summary>
@@ -40,6 +44,8 @@ public interface IWindowService
 public interface IAppStateStore
 {
     AppState State { get; }
+    /// <summary>Folder that holds state.json (shown in "Acerca de").</summary>
+    string DataFolder { get; }
     void Save();
     RepoEntry? Find(string path);
     RepoEntry Add(string path);

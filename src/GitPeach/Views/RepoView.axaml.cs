@@ -68,7 +68,12 @@ public partial class RepoView : UserControl
     private void OnLogChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(CommandLogViewModel.Text))
-            Dispatcher.UIThread.Post(() => LogBox.CaretIndex = int.MaxValue, DispatcherPriority.Background);
+            Dispatcher.UIThread.Post(() => LogScroll.ScrollToEnd(), DispatcherPriority.Background);
+    }
+
+    private async void OnCopyLog(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_vm is not null && TopLevel.GetTopLevel(this)?.Clipboard is { } cb) await cb.SetTextAsync(_vm.Log.Text);
     }
 
     private void SetTopHeight(bool wip)

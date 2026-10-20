@@ -26,16 +26,25 @@ public static class MenuPresenter
     public static void Show(Control target, IReadOnlyList<MenuAction> actions)
     {
         if (actions.Count == 0) return;
+        new ContextMenu { ItemsSource = Build(actions) }.Open(target);
+    }
+
+    private static List<Control> Build(IReadOnlyList<MenuAction> actions)
+    {
         var items = new List<Control>();
         foreach (var a in actions)
         {
             if (a.IsSeparator) { items.Add(new Separator()); continue; }
             var mi = new MenuItem { Header = a.Header };
             if (a.Gesture is not null) mi.InputGesture = KeyGesture.Parse(a.Gesture);
-            var run = a.Run!;
-            mi.Click += async (_, _) => await run();
+            if (a.Children is { } children) mi.ItemsSource = Build(children);
+            else
+            {
+                var run = a.Run!;
+                mi.Click += async (_, _) => await run();
+            }
             items.Add(mi);
         }
-        new ContextMenu { ItemsSource = items }.Open(target);
+        return items;
     }
 }

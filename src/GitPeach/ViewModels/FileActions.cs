@@ -143,7 +143,7 @@ public sealed class FileActions(
         if (exists)
         {
             yield return MenuAction.Sync("Abrir archivo", () => shell.OpenFile(full));
-            yield return MenuAction.Sync("Abrir en el editor", () => shell.OpenInEditor(full));
+            yield return new MenuAction("Abrir en TextPeach", () => TextPeachLink.Open(shell, dialogs, session.RepoPath, full));
         }
         yield return MenuAction.Sync("Mostrar en el Explorador", () => shell.RevealInExplorer(full));
         yield return new MenuAction("Copiar ruta relativa", () => clipboard.SetTextAsync(relative.Replace('\\', '/')));

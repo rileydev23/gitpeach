@@ -9,13 +9,24 @@ public sealed class RepoEntry
     public string Name { get; set; } = "";
     public bool Favorite { get; set; }
     public DateTimeOffset LastOpened { get; set; }
+    /// <summary>Name of the <see cref="RepoGroup"/> it belongs to; null = ungrouped.</summary>
+    public string? Group { get; set; }
     [JsonIgnore] public string? Branch { get; set; }
     [JsonIgnore] public bool Missing { get; set; }
+}
+
+public sealed class RepoGroup
+{
+    public string Name { get; set; } = "";
+    public bool Collapsed { get; set; }
 }
 
 public sealed class AppState
 {
     public List<RepoEntry> Repos { get; set; } = new();
+    /// <summary>Groups in display order.</summary>
+    public List<RepoGroup> Groups { get; set; } = new();
+    public bool UngroupedCollapsed { get; set; }
     public List<string> OpenTabs { get; set; } = new();
     public string? ActiveTab { get; set; }
     public double Width { get; set; }
@@ -33,6 +44,8 @@ internal sealed partial class AppStateContext : JsonSerializerContext { }
 public sealed class RepoStore : IAppStateStore
 {
     private readonly string _file;
+
+    public string DataFolder => System.IO.Path.GetDirectoryName(_file)!;
     private readonly object _lock = new();
 
     public AppState State { get; private set; } = new();

@@ -222,7 +222,7 @@ public sealed partial class RepoViewModel : TabViewModel, IRepoSession, IDisposa
 
     [RelayCommand] private void OpenInExplorer() => _shell.OpenFolder(RepoPath);
     [RelayCommand] private void OpenInTerminal() => _shell.OpenTerminal(RepoPath);
-    [RelayCommand] private void OpenInVsCode() => _shell.OpenInEditor(RepoPath);
+    [RelayCommand] private Task OpenInTextPeach() => TextPeachLink.Open(_shell, _dialogs, RepoPath);
 
     public void Dispose()
     {

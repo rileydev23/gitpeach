@@ -9,7 +9,7 @@ public static class Shortcuts
         ("Ctrl+Tab / Ctrl+Shift+Tab", "Pestaña siguiente / anterior"),
         ("Ctrl+1 … Ctrl+9", "Ir a la pestaña N"),
         ("Ctrl+W", "Cerrar pestaña"),
-        ("F1", "Mostrar atajos de teclado"),
+        ("F1", "Acerca de y atajos de teclado"),
     };
 
     public static readonly (string Gesture, string Description)[] Repo =
@@ -29,10 +29,8 @@ public static class Shortcuts
         ("Esc (en la búsqueda)", "Limpiar la búsqueda"),
     };
 
-    public static string Describe()
-    {
-        static string Block(string title, (string G, string D)[] items)
-            => title + "\n" + string.Join("\n", items.Select(i => $"  {i.G,-28} {i.D}"));
-        return Block("General", Global) + "\n\n" + Block("Repositorio", Repo);
-    }
+    public const string AboutText = "Cliente de git para escritorio: historial con grafo, cambios, diffs, ramas, stashes y remotos de varios repositorios en pestañas.";
+
+    public static (string Title, (string Gesture, string Description)[] Items)[] Groups =>
+        new[] { ("General", Global), ("Repositorio", Repo) };
 }

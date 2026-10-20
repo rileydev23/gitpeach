@@ -25,7 +25,7 @@
     <Border DockPanel.Dock="Top" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="8,6">
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
-          <Button Content="VS Code" Command="{Binding OpenInVsCodeCommand}" />
+          <Button Content="TextPeach" Command="{Binding OpenInTextPeachCommand}" ToolTip.Tip="Revisar el código del repositorio en TextPeach (solo lectura)" />
           <Button Content="Explorador" Command="{Binding OpenInExplorerCommand}" />
           <Button Content="Terminal" Command="{Binding OpenInTerminalCommand}" />
         </StackPanel>
@@ -91,9 +91,14 @@
     <Border DockPanel.Dock="Bottom" Background="#18191c" BorderBrush="#3a3c42" BorderThickness="0,1,0,0"
             Height="170" IsVisible="{Binding Log.IsVisible}">
       <DockPanel>
-        <Button DockPanel.Dock="Right" VerticalAlignment="Top" Classes="flat" Content="Limpiar" Command="{Binding Log.ClearCommand}" />
-        <TextBox x:Name="LogBox" Text="{Binding Log.Text, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
-                 BorderThickness="0" Background="Transparent" FontFamily="Consolas, Cascadia Mono" FontSize="12" />
+        <StackPanel DockPanel.Dock="Right" VerticalAlignment="Top">
+          <Button Classes="flat" Content="Copiar" Click="OnCopyLog" ToolTip.Tip="Copiar el log al portapapeles" />
+          <Button Classes="flat" Content="Limpiar" Command="{Binding Log.ClearCommand}" />
+        </StackPanel>
+        <!-- Read-only output: a TextBlock, so it never shows a caret or an input border. -->
+        <ScrollViewer x:Name="LogScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+          <TextBlock Text="{Binding Log.Text}" FontFamily="Consolas, Cascadia Mono" FontSize="12" Margin="10,6" />
+        </ScrollViewer>
       </DockPanel>
     </Border>
 
