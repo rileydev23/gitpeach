@@ -151,6 +151,24 @@
     <Setter Property="Background" Value="Transparent" />
   </Style>
 
+  <!-- Hand cursor on everything that is clicked like a button or a link; lists, tree, tabs and the window buttons
+       keep the arrow, as in Windows. -->
+  <Style Selector="Button">
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="ToggleButton">
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="SplitButton">
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="Button.caption">
+    <Setter Property="Cursor" Value="Arrow" />
+  </Style>
+  <Style Selector="Button:disabled, ToggleButton:disabled">
+    <Setter Property="Cursor" Value="Arrow" />
+  </Style>
+
   <Style Selector="GridSplitter">
     <Setter Property="Background" Value="#3a3c42" />
   </Style>
