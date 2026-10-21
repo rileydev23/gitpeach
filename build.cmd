@@ -3,6 +3,8 @@ rem Builds a single-file, self-contained, portable GitPeach.exe into .\dist
 setlocal
 cd /d "%~dp0"
 if exist dist rmdir /s /q dist
+rem Always from scratch: a stale incremental Release build can ship without the compiled XAML (the exe dies at startup).
+if exist src\GitPeach\obj\Release rmdir /s /q src\GitPeach\obj\Release
 dotnet publish src\GitPeach\GitPeach.csproj -c Release -r win-x64 --self-contained ^
   -p:PublishSingleFile=true ^
   -p:PublishReadyToRun=true ^
