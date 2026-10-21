@@ -11,8 +11,10 @@ rm -rf src/GitPeach/obj/Release
 dotnet publish src/GitPeach/GitPeach.csproj -c Release -r linux-x64 --self-contained \
   -p:PublishSingleFile=true \
   -p:PublishReadyToRun=true \
+  -p:PublishTrimmed=true \
+  -p:TrimMode=partial \
   -p:IncludeNativeLibrariesForSelfExtract=true \
-  -p:EnableCompressionInSingleFile=true \
+  -p:EnableCompressionInSingleFile=false \
   -p:DebugType=none -p:DebugSymbols=false "${VERSIONARG[@]}" \
   -o dist
 chmod +x dist/GitPeach
