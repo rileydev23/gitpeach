@@ -141,8 +141,15 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void ShowHome() => SelectedTab = Home;
 
+    /// <summary>Next to the app name in the title bar: the open repository and where it lives.</summary>
+    public string Subtitle => SelectedTab is RepoViewModel r ? $"{r.Title}  ·  {r.RepoPath}" : "";
+    /// <summary>Taskbar and Alt+Tab text.</summary>
+    public string WindowTitle => SelectedTab is RepoViewModel r ? $"{r.Title} — GitPeach" : "GitPeach";
+
     partial void OnSelectedTabChanged(TabViewModel? value)
     {
+        OnPropertyChanged(nameof(Subtitle));
+        OnPropertyChanged(nameof(WindowTitle));
         OnPropertyChanged(nameof(IsHomeSelected));
         OnPropertyChanged(nameof(SelectedRepoTab));
         if (_ready) SaveTabs();

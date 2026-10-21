@@ -4,9 +4,12 @@
         xmlns:views="using:GitPeach.Views"
         x:Class="GitPeach.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="GitPeach"
+        Title="{Binding WindowTitle}"
         Icon="/Assets/app.ico"
         MinWidth="800" MinHeight="500"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
         DragDrop.AllowDrop="True">
   <Window.KeyBindings>
     <KeyBinding Gesture="Ctrl+P" Command="{Binding QuickOpenCommand}" />
@@ -25,9 +28,32 @@
     <KeyBinding Gesture="Ctrl+D9" Command="{Binding SelectTabCommand}" CommandParameter="9" />
   </Window.KeyBindings>
 
-  <DockPanel>
+  <!-- Maximized windows extend past the screen by the frame width; the margin keeps everything visible. -->
+  <DockPanel Margin="{Binding $parent[Window].OffScreenMargin}">
+    <!-- Title bar (our own, see TextPeach docs/DISENO.md 6): icon + name + current repository, drag area, window buttons. -->
+    <Border x:Name="TitleBar" DockPanel.Dock="Top" Classes="titlebar">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+          <Button x:Name="MinButton" Classes="caption" ToolTip.Tip="Minimizar">
+            <Path Data="M0,5.5 H10" />
+          </Button>
+          <Button x:Name="MaxButton" Classes="caption" ToolTip.Tip="Maximizar">
+            <Path x:Name="MaxGlyph" Data="M0.5,0.5 H9.5 V9.5 H0.5 Z" />
+          </Button>
+          <Button x:Name="CloseButton" Classes="caption close" ToolTip.Tip="Cerrar">
+            <Path Data="M0.5,0.5 L9.5,9.5 M9.5,0.5 L0.5,9.5" />
+          </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="9" Margin="14,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+          <Image Source="/Assets/icon64.png" Width="18" Height="18" />
+          <TextBlock Text="GitPeach" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <TextBlock Text="{Binding Subtitle}" Foreground="#8a8d93" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
     <!-- Tab strip -->
-    <Border DockPanel.Dock="Top" Background="#18191c" BorderBrush="#3a3c42" BorderThickness="0,0,0,1">
+    <Border DockPanel.Dock="Top" MinHeight="36" Background="#18191c" BorderBrush="#3a3c42" BorderThickness="0,0,0,1">
       <DockPanel>
       <Button DockPanel.Dock="Right" Classes="flat" Content="?" Command="{Binding ShowAboutCommand}"
               ToolTip.Tip="Acerca de y atajos de teclado (F1)" Foreground="#8a8d93" Margin="0,0,8,0" VerticalAlignment="Center" />
