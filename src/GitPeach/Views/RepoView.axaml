@@ -97,7 +97,7 @@
         </StackPanel>
         <!-- Read-only output: a TextBlock, so it never shows a caret or an input border. -->
         <ScrollViewer x:Name="LogScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-          <TextBlock Text="{Binding Log.Text}" FontFamily="Consolas, Cascadia Mono" FontSize="12" Margin="10,6" />
+          <TextBlock Text="{Binding Log.Text}" FontFamily="Consolas, Cascadia Mono, DejaVu Sans Mono, Liberation Mono" FontSize="12" Margin="10,6" />
         </ScrollViewer>
       </DockPanel>
     </Border>

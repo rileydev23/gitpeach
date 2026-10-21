@@ -6,7 +6,7 @@ namespace GitPeach.Services;
 /// </summary>
 public static class TextPeachLocator
 {
-    public const string ExeName = "TextPeach.exe";
+    public static readonly string ExeName = OperatingSystem.IsWindows() ? "TextPeach.exe" : "TextPeach";
     public const string RepoUrl = "https://github.com/rileydev23/textpeach";
 
     /// <summary>

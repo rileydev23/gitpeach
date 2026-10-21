@@ -150,7 +150,7 @@ public sealed class DialogService : IDialogService
             foreach (var (gesture, desc) in items)
             {
                 var row = new Grid { ColumnDefinitions = new ColumnDefinitions("215,*") };
-                row.Children.Add(new TextBlock { Text = gesture, Foreground = Palette.Dim, FontSize = 12, FontFamily = new FontFamily("Cascadia Mono, Consolas") });
+                row.Children.Add(new TextBlock { Text = gesture, Foreground = Palette.Dim, FontSize = 12, FontFamily = new FontFamily("Cascadia Mono, Consolas, DejaVu Sans Mono") });
                 var d = new TextBlock { Text = desc, Foreground = Palette.Text, FontSize = 12, TextWrapping = TextWrapping.Wrap };
                 Grid.SetColumn(d, 1);
                 row.Children.Add(d);

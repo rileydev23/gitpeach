@@ -208,13 +208,13 @@
     <Setter Property="Foreground" Value="#8a8d93" />
   </Style>
   <Style Selector="TextBlock.mono">
-    <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, Courier New" />
+    <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, Courier New, DejaVu Sans Mono, Liberation Mono" />
   </Style>
 
   <Style Selector="ae|TextEditor">
     <Setter Property="Background" Value="#1b1c1f" />
     <Setter Property="Foreground" Value="#d4d4d4" />
     <Setter Property="LineNumbersForeground" Value="#5d6066" />
-    <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New" />
+    <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New, DejaVu Sans Mono, Liberation Mono" />
   </Style>
 </Styles>

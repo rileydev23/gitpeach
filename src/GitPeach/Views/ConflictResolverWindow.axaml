@@ -12,7 +12,7 @@
   </Window.KeyBindings>
   <Window.Styles>
     <Style Selector="TextBox.code">
-      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New" />
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New, DejaVu Sans Mono, Liberation Mono" />
       <Setter Property="FontSize" Value="12" />
       <Setter Property="AcceptsReturn" Value="True" />
       <Setter Property="AcceptsTab" Value="True" />
@@ -20,7 +20,7 @@
       <Setter Property="MinHeight" Value="40" />
     </Style>
     <Style Selector="SelectableTextBlock.code">
-      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New" />
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New, DejaVu Sans Mono, Liberation Mono" />
       <Setter Property="FontSize" Value="12" />
       <Setter Property="Foreground" Value="#d4d4d4" />
     </Style>
