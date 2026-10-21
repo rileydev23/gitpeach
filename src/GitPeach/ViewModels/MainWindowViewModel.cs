@@ -10,6 +10,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly IAppStateStore _store;
     private readonly IRepoViewModelFactory _repos;
     private readonly IDialogService _dialogs;
+    private readonly IShellService _shell;
     private readonly bool _ready;
 
     public HomeViewModel Home { get; }
@@ -20,11 +21,12 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty] private TabViewModel? _selectedTab;
 
-    public MainWindowViewModel(IAppStateStore store, HomeViewModel home, IRepoViewModelFactory repos, IDialogService dialogs)
+    public MainWindowViewModel(IAppStateStore store, HomeViewModel home, IRepoViewModelFactory repos, IDialogService dialogs, IShellService shell)
     {
         _store = store;
         _repos = repos;
         _dialogs = dialogs;
+        _shell = shell;
         Home = home;
         Home.OpenRequested += OpenRepo;
         Tabs.Add(Home);
@@ -38,6 +40,20 @@ public partial class MainWindowViewModel : ObservableObject
         SelectedTab = Tabs.OfType<RepoViewModel>().FirstOrDefault(t =>
             string.Equals(t.RepoPath, active, StringComparison.OrdinalIgnoreCase)) ?? (TabViewModel)Home;
         _ready = true;
+    }
+
+    /// <summary>
+    /// <c>GitPeach.exe &lt;carpeta&gt;</c> (TextPeach's branch button, for instance): adds the repository if needed and
+    /// opens it in a tab. A folder of repositories is imported as a group, as when it is dropped on the window.
+    /// </summary>
+    public async Task OpenFromArgsAsync(IEnumerable<string> args)
+    {
+        foreach (var raw in args)
+        {
+            string path;
+            try { path = Path.GetFullPath(raw); } catch { continue; }
+            if (Directory.Exists(path)) await Home.AddPathAsync(path, open: true);
+        }
     }
 
     public void OpenRepo(RepoEntry entry)
@@ -111,7 +127,7 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task ShowAbout() => _dialogs.About(Shortcuts.AboutText, _store.DataFolder, Shortcuts.Groups);
+    private Task ShowAbout() => _dialogs.About(Shortcuts.AboutText, _store.DataFolder, Shortcuts.Groups, () => _shell.OpenFolder(_store.DataFolder));
 
     public bool IsHomeSelected => SelectedTab == Home;
 

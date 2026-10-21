@@ -26,8 +26,8 @@ public sealed partial class WorkingTreeViewModel : ObservableObject
 
     public bool HasConflicts => ConflictCount > 0;
     public string ConflictText => ConflictCount == 1
-        ? "1 archivo en conflicto — clic derecho sobre él para resolverlo"
-        : $"{ConflictCount} archivos en conflicto — clic derecho sobre cada uno para resolverlos";
+        ? "1 archivo en conflicto — doble clic sobre él para resolverlo"
+        : $"{ConflictCount} archivos en conflicto — doble clic sobre cada uno para resolverlos";
 
     /// <summary>The file whose diff should be shown.</summary>
     public FileChange? SelectedChange => (SelectedUnstaged ?? SelectedStaged)?.Change;

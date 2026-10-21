@@ -33,6 +33,15 @@ public partial class RepoView : UserControl
                 await _vm.Sidebar.ActivateAsync(si);
         };
 
+        // Double-click a working-tree file: conflicts open the resolver, other files the viewer.
+        foreach (var list in new[] { UnstagedList, StagedList })
+            list.DoubleTapped += (_, e) =>
+            {
+                if (_vm is not null && e.Source is Control c && c.FindAncestorOfType<Button>() is null &&
+                    c.FindAncestorOfType<ListBoxItem>()?.DataContext is FileEntryVM f)
+                    _vm.WorkingTree.Files.Activate(f.Change);
+            };
+
         DataContextChanged += (_, _) => Attach();
     }
 

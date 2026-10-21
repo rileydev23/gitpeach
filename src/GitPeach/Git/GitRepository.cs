@@ -240,6 +240,12 @@ public sealed partial class GitRepository : IGitRepository
 
     public Task<GitResult> RemoveConflicted(string path) => Run(new[] { "rm", "-q", "--", path }, log: true);
 
+    public async Task<bool> HasMergeTool()
+    {
+        var r = await Run(new[] { "config", "--get", "merge.tool" });
+        return r.Ok && r.Stdout.Trim().Length > 0;
+    }
+
     public Task<GitResult> MergeTool(string path) => Run(new[] { "mergetool", "--no-prompt", "--", path }, log: true);
 
     // ---------- branches / refs ----------

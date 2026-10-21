@@ -7,10 +7,10 @@ namespace GitPeach.Services;
 public static class TextPeachLocator
 {
     public const string ExeName = "TextPeach.exe";
-    public const string RepoUrl = "https://github.com/devrileywin/TextPeach";
+    public const string RepoUrl = "https://github.com/rileydev23/textpeach";
 
     /// <summary>
-    /// Candidate locations in priority order: next to GitPeach, a sibling "TextPeach" folder,
+    /// Fallback locations (when TextPeach has never announced itself) in priority order: next to GitPeach, a sibling "TextPeach" folder,
     /// the usual per-user and per-machine install folders, then every folder in PATH.
     /// </summary>
     public static IEnumerable<string> Candidates(string baseDir, string? localAppData, string? programFiles, string? pathVariable)
@@ -33,7 +33,8 @@ public static class TextPeachLocator
         return null;
     }
 
-    public static string? FindOnThisMachine() => Find(File.Exists,
+    /// <summary>Where TextPeach last said it runs from (peachapps/TextPeach/location.json), else the usual folders.</summary>
+    public static string? FindOnThisMachine() => PeachApps.Locate("TextPeach") ?? Find(File.Exists,
         AppContext.BaseDirectory,
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),

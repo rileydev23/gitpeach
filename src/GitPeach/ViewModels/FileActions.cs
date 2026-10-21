@@ -53,15 +53,25 @@ public sealed class FileActions(
 
     public Task MarkResolved(IEnumerable<string> paths) => session.PerformQuiet(() => git.MarkResolved(paths));
 
+    /// <summary>GitPeach's own merge tool.</summary>
+    public void ResolveConflict(string path) => windows.Show(new ConflictResolverViewModel(
+        FullPath(path), path, session.Snapshot.Operation == RepoOperation.Rebase, this, dialogs));
+
+    /// <summary>The user's configured merge.tool; without one (or if it fails) GitPeach's own tool opens instead.</summary>
     public async Task OpenMergeTool(FileChange change)
     {
+        if (!await git.HasMergeTool())
+        {
+            session.Notify("No hay herramienta de merge externa configurada: se abre la de GitPeach");
+            ResolveConflict(change.Path);
+            return;
+        }
         session.Notify($"Herramienta de merge abierta para {change.Path}…");
         var r = await git.MergeTool(change.Path);
-        if (!r.Ok)
-            await dialogs.Message("Herramienta de merge",
-                r.Message + "\n\nConfigura una con:  git config --global merge.tool <herramienta>\n" +
-                "o resuelve el archivo en tu editor y usa \"Marcar como resuelto\".");
         await session.RefreshAsync(false);
+        if (!r.Ok && await dialogs.Confirm("Herramienta de merge",
+                r.Message + "\n\n¿Resolverlo con la herramienta de GitPeach?", "Resolver en GitPeach"))
+            ResolveConflict(change.Path);
     }
 
     // ---------- .gitignore ----------
@@ -78,6 +88,19 @@ public sealed class FileActions(
 
     public void ShowBlame(string path, string? revision = null) => windows.Show(new BlameViewModel(git, path, revision));
 
+    /// <summary>Built-in viewer (read-only until "Editar"). <paramref name="edit"/> opens it already editing.</summary>
+    public void ViewFile(string path, bool edit = false) =>
+        windows.Show(new FileViewerViewModel(FullPath(path), path, dialogs, shell, edit));
+
+    public void OpenWithDefaultApp(string path) => shell.OpenFile(FullPath(path));
+
+    /// <summary>Double-click on a working-tree file: conflicts open the resolver, other files the viewer.</summary>
+    public void Activate(FileChange change)
+    {
+        if (change.IsConflict) ResolveConflict(change.Path);
+        else if (File.Exists(FullPath(change.Path))) ViewFile(change.Path);
+    }
+
     // ---------- menus ----------
 
     public IReadOnlyList<MenuAction> MenuFor(FileEntryVM entry)
@@ -90,10 +113,12 @@ public sealed class FileActions(
         if (c.IsConflict)
         {
             var (ours, theirs) = ConflictLabels();
+            items.Add(MenuAction.Sync("Resolver conflicto…", () => ResolveConflict(c.Path)));
+            items.Add(MenuAction.Separator);
             items.Add(new MenuAction(ours, () => UseSide(c, ConflictSide.Ours)));
             items.Add(new MenuAction(theirs, () => UseSide(c, ConflictSide.Theirs)));
             items.Add(new MenuAction("Marcar como resuelto", () => MarkResolved(new[] { c.Path })));
-            items.Add(new MenuAction("Abrir herramienta de merge", () => OpenMergeTool(c)));
+            items.Add(new MenuAction("Herramienta de merge externa", () => OpenMergeTool(c)));
             items.Add(MenuAction.Separator);
         }
         else if (c.Staged)
@@ -142,7 +167,8 @@ public sealed class FileActions(
         var full = FullPath(relative);
         if (exists)
         {
-            yield return MenuAction.Sync("Abrir archivo", () => shell.OpenFile(full));
+            yield return MenuAction.Sync("Ver / editar archivo", () => ViewFile(relative));
+            yield return MenuAction.Sync("Abrir con la app predeterminada", () => shell.OpenFile(full));
             yield return new MenuAction("Abrir en TextPeach", () => TextPeachLink.Open(shell, dialogs, session.RepoPath, full));
         }
         yield return MenuAction.Sync("Mostrar en el Explorador", () => shell.RevealInExplorer(full));

@@ -34,6 +34,8 @@ ViewModels ──► Services (IDialogService, IShellService, IClipboardService,
 - `CommandLogViewModel`: log de comandos.
 - `RepoActions`: flujos de git con confirmación (push, pull, ramas, tags, stash, reset…). Se escriben una sola vez y los usan la barra, el sidebar y el menú de commits.
 - `FileActions`: todo lo que se hace sobre un archivo (stage, conflictos, .gitignore, abrir, historial, blame).
+- `ConflictResolverViewModel`: herramienta de merge propia (bloques de `ConflictParser`, elegir mía/entrante/ambas o editar). Se usa también cuando no hay `merge.tool` configurado.
+- `FileViewerViewModel`: visor de texto propio (AvaloniaEdit), de solo lectura hasta pulsar "Editar".
 
 ## Convenciones
 

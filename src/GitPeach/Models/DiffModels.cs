@@ -62,3 +62,11 @@ public sealed class GraphRow
     public required IReadOnlyList<GraphSegment> Segments { get; init; }
     public int Width { get; init; }
 }
+
+/// <summary>A piece of a file with conflict markers: plain text or a conflict block.</summary>
+public abstract record ConflictSegment;
+
+public sealed record CommonSegment(string Text) : ConflictSegment;
+
+/// <summary>One "&lt;&lt;&lt;&lt;&lt;&lt;&lt; … &gt;&gt;&gt;&gt;&gt;&gt;&gt;" block. <see cref="Base"/> is only present with diff3 style.</summary>
+public sealed record ConflictBlock(string Ours, string? Base, string Theirs, string OursLabel, string TheirsLabel) : ConflictSegment;

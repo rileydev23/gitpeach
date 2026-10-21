@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GitPeach.ViewModels"
+        xmlns:ae="using:AvaloniaEdit"
+        x:Class="GitPeach.Views.FileViewerWindow"
+        x:DataType="vm:FileViewerViewModel"
+        Title="{Binding Title}"
+        Icon="/Assets/app.ico"
+        Width="1000" Height="760" MinWidth="500" MinHeight="300"
+        WindowStartupLocation="CenterOwner">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+E" Command="{Binding ToggleEditCommand}" />
+    <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}" />
+  </Window.KeyBindings>
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="10,5">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+          <Button Classes="warn" Content="✎ Editar" Command="{Binding EditCommand}" IsVisible="{Binding CanEdit}" ToolTip.Tip="Habilita la edición de este archivo (Ctrl+E)" />
+          <Button Classes="accent" Content="Guardar" Command="{Binding SaveCommand}" IsVisible="{Binding IsEditing}" ToolTip.Tip="Ctrl+S" />
+          <Button Content="Terminar edición" Command="{Binding FinishEditingCommand}" IsVisible="{Binding IsEditing}" ToolTip.Tip="Vuelve a solo lectura (Ctrl+E)" />
+          <Button Content="Abrir con la app predeterminada" Command="{Binding OpenExternalCommand}" ToolTip.Tip="{Binding FullPath}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" ClipToBounds="True">
+          <TextBlock Text="{Binding RelativePath}" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip.Tip="{Binding FullPath}" />
+          <TextBlock Text="{Binding Info}" Classes="dim" FontSize="11" VerticalAlignment="Center" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Top" Background="#5a4318" Padding="10,5" IsVisible="{Binding IsEditing}">
+      <TextBlock Text="Modo edición — los cambios se escriben en el disco solo al pulsar Guardar (Ctrl+S)." FontWeight="SemiBold" />
+    </Border>
+
+    <Panel>
+      <ae:TextEditor x:Name="Editor" Document="{Binding Document}" IsReadOnly="{Binding !IsEditing}" IsVisible="{Binding IsLoaded}"
+                     ShowLineNumbers="True" FontSize="13"
+                     HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+      <StackPanel IsVisible="{Binding HasMessage}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" MaxWidth="520">
+        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" TextAlignment="Center" />
+        <Button Content="Abrir con la app predeterminada" Command="{Binding OpenExternalCommand}" HorizontalAlignment="Center" />
+      </StackPanel>
+    </Panel>
+  </DockPanel>
+</Window>

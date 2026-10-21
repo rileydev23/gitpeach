@@ -108,7 +108,7 @@ public sealed class DialogService : IDialogService
         await w.ShowDialog(owner);
     }
 
-    public async Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups)
+    public async Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups, Action openDataFolder)
     {
         var owner = Owner;
         if (owner is null) return;
@@ -116,6 +116,8 @@ public sealed class DialogService : IDialogService
         var version = typeof(DialogService).Assembly.GetName().Version;
         var close = Btn("Cerrar", true);
         close.Click += (_, _) => w.Close();
+        var openData = Btn("Abrir carpeta de configuración");
+        openData.Click += (_, _) => openDataFolder();
 
         var header = new DockPanel();
         var logo = new Image
@@ -171,8 +173,8 @@ public sealed class DialogService : IDialogService
                     Content = shortcuts,
                 },
                 new Border { Height = 1, Background = Palette.Border },
-                new TextBlock { Text = "Datos guardados en: " + dataFolder, Foreground = Palette.Dim, FontSize = 11, TextWrapping = TextWrapping.Wrap },
-                new StackPanel { HorizontalAlignment = HorizontalAlignment.Right, Children = { close } },
+                new TextBlock { Text = "Configuración guardada en: " + dataFolder, Foreground = Palette.Dim, FontSize = 11, TextWrapping = TextWrapping.Wrap },
+                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { openData, close } },
             },
         };
         w.KeyDown += (_, e) => { if (e.Key is Key.Escape or Key.Enter) w.Close(); };

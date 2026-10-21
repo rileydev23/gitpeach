@@ -16,10 +16,15 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        TabStrip.Install();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var services = ConfigureServices();
             var store = services.GetRequiredService<IAppStateStore>();
+#if !DEBUG
+            // Debug runs stay anonymous so they never replace the location of the real build.
+            PeachApps.Announce("GitPeach");
+#endif
             var runner = services.GetRequiredService<IGitRunner>();
             if (!string.IsNullOrWhiteSpace(store.State.GitPath) && File.Exists(store.State.GitPath))
                 runner.GitExe = store.State.GitPath;
@@ -32,7 +37,14 @@ public partial class App : Application
             {
                 PlaceWindow(window, store.State, shown: true);
                 window.Opacity = 1;
+                if (desktop.Args is { Length: > 0 } args) _ = vm.OpenFromArgsAsync(args);
             };
+            SingleInstance.Received += args => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _ = vm.OpenFromArgsAsync(args);
+                if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
+                window.Activate();
+            });
             window.Closing += (_, _) =>
             {
                 var st = store.State;
@@ -57,7 +69,9 @@ public partial class App : Application
         var windows = new WindowService()
             .Register<DetailsViewModel>(() => new DiffWindow())
             .Register<FileHistoryViewModel>(() => new FileHistoryWindow())
-            .Register<BlameViewModel>(() => new BlameWindow());
+            .Register<BlameViewModel>(() => new BlameWindow())
+            .Register<FileViewerViewModel>(() => new FileViewerWindow())
+            .Register<ConflictResolverViewModel>(() => new ConflictResolverWindow());
 
         return new ServiceCollection()
             // Infrastructure

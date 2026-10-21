@@ -1,0 +1,149 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GitPeach.ViewModels"
+        x:Class="GitPeach.Views.ConflictResolverWindow"
+        x:DataType="vm:ConflictResolverViewModel"
+        Title="{Binding Title}"
+        Icon="/Assets/app.ico"
+        Width="1200" Height="820" MinWidth="700" MinHeight="400"
+        WindowStartupLocation="CenterOwner">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}" />
+  </Window.KeyBindings>
+  <Window.Styles>
+    <Style Selector="TextBox.code">
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="AcceptsReturn" Value="True" />
+      <Setter Property="AcceptsTab" Value="True" />
+      <Setter Property="TextWrapping" Value="NoWrap" />
+      <Setter Property="MinHeight" Value="40" />
+    </Style>
+    <Style Selector="SelectableTextBlock.code">
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="#d4d4d4" />
+    </Style>
+    <!-- The chosen side gets a bright border. -->
+    <Style Selector="Border.side">
+      <Setter Property="BorderBrush" Value="#3a3c42" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="3" />
+    </Style>
+    <Style Selector="Border.side.chosen">
+      <Setter Property="BorderBrush" Value="#4a90d9" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="TextBlock.state">
+      <Setter Property="Foreground" Value="#e0a24a" />
+    </Style>
+    <Style Selector="TextBlock.state.done">
+      <Setter Property="Foreground" Value="#6cc070" />
+    </Style>
+  </Window.Styles>
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="10,6">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+          <Button Content="{Binding OursName, StringFormat='Todo: {0}'}" Command="{Binding UseAllOursCommand}" IsVisible="{Binding !HasMessage}"
+                  ToolTip.Tip="Elige esa versión en todos los bloques" />
+          <Button Content="{Binding TheirsName, StringFormat='Todo: {0}'}" Command="{Binding UseAllTheirsCommand}" IsVisible="{Binding !HasMessage}"
+                  ToolTip.Tip="Elige esa versión en todos los bloques" />
+          <Button Content="⋯" Padding="10,4">
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedRight">
+                <MenuItem Header="Ver / editar el archivo completo" Command="{Binding EditWholeFileCommand}" />
+                <MenuItem Header="Abrir con la app predeterminada" Command="{Binding OpenExternalCommand}" />
+                <Separator />
+                <MenuItem Header="Recargar desde el disco" Command="{Binding LoadCommand}" />
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+          <Button Classes="accent" Content="Guardar y marcar resuelto" Command="{Binding SaveCommand}" IsEnabled="{Binding CanSave}" IsVisible="{Binding !HasMessage}"
+                  ToolTip.Tip="Escribe el resultado en el archivo y lo deja en stage (Ctrl+S)" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" ClipToBounds="True">
+          <TextBlock Text="{Binding FilePath}" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip.Tip="{Binding FullPath}" />
+          <TextBlock Text="{Binding Progress}" Foreground="#f0c890" VerticalAlignment="Center" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <Panel>
+      <StackPanel IsVisible="{Binding HasMessage}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" MaxWidth="560">
+        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" TextAlignment="Center" />
+        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+          <Button Classes="accent" Content="Marcar como resuelto" Command="{Binding MarkResolvedCommand}" />
+          <Button Content="Ver / editar archivo" Command="{Binding EditWholeFileCommand}" />
+          <Button Content="Recargar" Command="{Binding LoadCommand}" />
+        </StackPanel>
+      </StackPanel>
+
+      <ScrollViewer IsVisible="{Binding !HasMessage}" Background="#1b1c1f" HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding Segments}" Margin="12,8,12,16">
+          <ItemsControl.DataTemplates>
+            <DataTemplate DataType="vm:CommonSegmentVM">
+              <SelectableTextBlock Classes="code" Text="{Binding Display}" Foreground="#7d8087" Margin="6,4" />
+            </DataTemplate>
+
+            <DataTemplate DataType="vm:ConflictBlockVM">
+              <Border Background="#26272b" BorderBrush="#5a4318" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,6">
+                <StackPanel Spacing="8">
+                  <DockPanel>
+                    <Button DockPanel.Dock="Right" Classes="flat" Content="Deshacer elección" Command="{Binding ResetCommand}" IsVisible="{Binding IsResolved}" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <TextBlock Text="{Binding Number, StringFormat='Conflicto {0}'}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                      <TextBlock Classes="state" Classes.done="{Binding IsResolved}" Text="{Binding ChoiceText}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </DockPanel>
+
+                  <Grid ColumnDefinitions="*,8,*">
+                    <Border Classes="side" Classes.chosen="{Binding IsOurs}">
+                      <DockPanel>
+                        <Border DockPanel.Dock="Top" Background="#1d3a2a" Padding="8,4" CornerRadius="3,3,0,0">
+                          <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Usar esta" Command="{Binding UseOursCommand}" Padding="8,2" />
+                            <TextBlock Text="{Binding OursHeader}" Foreground="#a6e3b4" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                          </DockPanel>
+                        </Border>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                          <SelectableTextBlock Classes="code" Text="{Binding Ours}" Margin="8,6" />
+                        </ScrollViewer>
+                      </DockPanel>
+                    </Border>
+                    <Border Grid.Column="2" Classes="side" Classes.chosen="{Binding IsTheirs}">
+                      <DockPanel>
+                        <Border DockPanel.Dock="Top" Background="#25364d" Padding="8,4" CornerRadius="3,3,0,0">
+                          <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Usar esta" Command="{Binding UseTheirsCommand}" Padding="8,2" />
+                            <TextBlock Text="{Binding TheirsHeader}" Foreground="#9ec5f0" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                          </DockPanel>
+                        </Border>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                          <SelectableTextBlock Classes="code" Text="{Binding Theirs}" Margin="8,6" />
+                        </ScrollViewer>
+                      </DockPanel>
+                    </Border>
+                  </Grid>
+
+                  <Expander Header="Versión base (antes de ambos cambios)" IsVisible="{Binding HasBase}" HorizontalAlignment="Stretch">
+                    <SelectableTextBlock Classes="code" Text="{Binding Base}" />
+                  </Expander>
+
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="{Binding OursName, StringFormat='Ambas ({0} primero)'}" Command="{Binding UseOursThenTheirsCommand}" />
+                    <Button Content="{Binding TheirsName, StringFormat='Ambas ({0} primero)'}" Command="{Binding UseTheirsThenOursCommand}" />
+                  </StackPanel>
+
+                  <TextBlock Text="Resultado (puedes editarlo)" Classes="dim" FontSize="11" />
+                  <TextBox Classes="code" Text="{Binding Result}" Watermark="Elige una versión arriba o escribe aquí el resultado" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.DataTemplates>
+        </ItemsControl>
+      </ScrollViewer>
+    </Panel>
+  </DockPanel>
+</Window>

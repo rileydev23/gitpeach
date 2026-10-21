@@ -45,6 +45,8 @@ public interface IGitConflicts
     Task<GitResult> UseConflictSide(string path, ConflictSide side);
     Task<GitResult> MarkResolved(IEnumerable<string> paths);
     Task<GitResult> RemoveConflicted(string path);
+    /// <summary>True when merge.tool is configured, so <see cref="MergeTool"/> has something to launch.</summary>
+    Task<bool> HasMergeTool();
     Task<GitResult> MergeTool(string path);
 }
 

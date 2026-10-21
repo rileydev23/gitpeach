@@ -8,7 +8,7 @@ public interface IDialogService
     Task<bool> Confirm(string title, string message, string ok = "Aceptar", string cancel = "Cancelar");
     Task Message(string title, string message);
     /// <summary>F1 / "?": app name, version and description, then the keyboard shortcuts.</summary>
-    Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups);
+    Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups, Action openDataFolder);
     Task<string?> Prompt(string title, string label, string initial = "");
     Task<string[]?> Form(string title, (string Label, string Initial)[] fields, string ok = "Aceptar");
     /// <summary>Lets the user pick one of <paramref name="options"/>; null when cancelled.</summary>

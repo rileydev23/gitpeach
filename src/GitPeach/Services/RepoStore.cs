@@ -52,10 +52,7 @@ public sealed class RepoStore : IAppStateStore
 
     public RepoStore()
     {
-        var exeDir = AppContext.BaseDirectory;
-        var dir = File.Exists(System.IO.Path.Combine(exeDir, "portable.txt"))
-            ? System.IO.Path.Combine(exeDir, "data")
-            : System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GitPeach");
+        var dir = PeachApps.SettingsFolder("GitPeach");
         Directory.CreateDirectory(dir);
         _file = System.IO.Path.Combine(dir, "state.json");
         Load();

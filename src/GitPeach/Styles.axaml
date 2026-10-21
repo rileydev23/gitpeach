@@ -1,5 +1,11 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ae="using:AvaloniaEdit">
+  <Styles.Resources>
+    <!-- Scroll bars: 4 px everywhere (see the ScrollBar styles below). -->
+    <x:Double x:Key="ScrollBarSize">4</x:Double>
+  </Styles.Resources>
+
   <Style Selector="Window">
     <Setter Property="Background" Value="#1e1f22" />
     <Setter Property="FontFamily" Value="Segoe UI" />
@@ -71,6 +77,15 @@
     <Setter Property="Background" Value="#5aa0e9" />
   </Style>
 
+  <!-- Edit mode (file viewer): the only "warning" button, so editing never looks like the default action. -->
+  <Style Selector="Button.warn">
+    <Setter Property="Background" Value="#5a4318" />
+    <Setter Property="BorderBrush" Value="#8a6d1f" />
+  </Style>
+  <Style Selector="Button.warn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#6e5320" />
+  </Style>
+
   <Style Selector="TextBox">
     <Setter Property="Background" Value="#26272b" />
     <Setter Property="BorderBrush" Value="#3a3c42" />
@@ -92,6 +107,43 @@
     <Setter Property="Background" Value="#2d2e33" />
   </Style>
 
+  <!-- Scroll bars, everywhere: one slim 4 px bar in its own row/column (never on top of the content), no arrow
+       buttons, and it does not grow under the pointer. Tab strips (ListBox.tabstrip) also scroll sideways with
+       the wheel (Views/TabStrip.cs). -->
+  <Style Selector="ScrollViewer">
+    <Setter Property="AllowAutoHide" Value="False" />
+  </Style>
+  <Style Selector="ListBox.tabstrip">
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+  </Style>
+  <Style Selector="ScrollBar:horizontal">
+    <Setter Property="MinHeight" Value="4" />
+    <Setter Property="Height" Value="4" />
+  </Style>
+  <Style Selector="ScrollBar:vertical">
+    <Setter Property="MinWidth" Value="4" />
+    <Setter Property="Width" Value="4" />
+  </Style>
+  <Style Selector="ScrollBar /template/ RepeatButton#PART_LineUpButton">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="ScrollBar /template/ RepeatButton#PART_LineDownButton">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="ScrollBar:horizontal /template/ Thumb">
+    <Setter Property="Height" Value="4" />
+    <Setter Property="MinWidth" Value="24" />
+    <Setter Property="CornerRadius" Value="2" />
+    <Setter Property="RenderTransform" Value="none" />
+  </Style>
+  <Style Selector="ScrollBar:vertical /template/ Thumb">
+    <Setter Property="Width" Value="4" />
+    <Setter Property="MinHeight" Value="24" />
+    <Setter Property="CornerRadius" Value="2" />
+    <Setter Property="RenderTransform" Value="none" />
+  </Style>
+
   <Style Selector="ListBox.diff ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="Transparent" />
   </Style>
@@ -108,5 +160,12 @@
   </Style>
   <Style Selector="TextBlock.mono">
     <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, Courier New" />
+  </Style>
+
+  <Style Selector="ae|TextEditor">
+    <Setter Property="Background" Value="#1b1c1f" />
+    <Setter Property="Foreground" Value="#d4d4d4" />
+    <Setter Property="LineNumbersForeground" Value="#5d6066" />
+    <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New" />
   </Style>
 </Styles>

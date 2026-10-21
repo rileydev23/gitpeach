@@ -39,7 +39,7 @@
           <Border Grid.Row="1" Height="2" Background="#4a90d9" IsVisible="{Binding IsHomeSelected}" />
         </Grid>
       </Button>
-      <ListBox ItemsSource="{Binding RepoTabs}" SelectedItem="{Binding SelectedRepoTab}" Margin="4,0,0,0">
+      <ListBox Classes="tabstrip" ItemsSource="{Binding RepoTabs}" SelectedItem="{Binding SelectedRepoTab}" Margin="4,0,0,0">
         <ListBox.ItemsPanel>
           <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
         </ListBox.ItemsPanel>

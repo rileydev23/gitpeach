@@ -27,10 +27,18 @@ public static class Shortcuts
         ("Ctrl+Enter", "Commit"),
         ("Ctrl+L", "Mostrar / ocultar el log de comandos"),
         ("Esc (en la búsqueda)", "Limpiar la búsqueda"),
+        ("Doble clic en un archivo", "Verlo en el visor, o resolver el conflicto"),
+    };
+
+    public static readonly (string Gesture, string Description)[] Viewer =
+    {
+        ("Ctrl+E", "Editar / volver a solo lectura"),
+        ("Ctrl+S", "Guardar (también en la resolución de conflictos)"),
+        ("Esc", "Cerrar la ventana"),
     };
 
     public const string AboutText = "Cliente de git para escritorio: historial con grafo, cambios, diffs, ramas, stashes y remotos de varios repositorios en pestañas.";
 
     public static (string Title, (string Gesture, string Description)[] Items)[] Groups =>
-        new[] { ("General", Global), ("Repositorio", Repo) };
+        new[] { ("General", Global), ("Repositorio", Repo), ("Visor de archivos", Viewer) };
 }
