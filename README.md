@@ -14,11 +14,16 @@
   <b>Español</b> · <a href="README.en.md">English</a>
 </p>
 
+<p align="center">
+  <img src="docs/img/repo.png" alt="Un repositorio abierto en GitPeach: ramas, historial con grafo, cambios locales y el diff de un archivo" />
+</p>
+
 ---
 
 ## Índice
 
 - [¿Por qué GitPeach?](#por-qué-gitpeach)
+- [Capturas](#capturas)
 - [Características](#características)
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
@@ -47,6 +52,15 @@ hacer commits, moverse entre ramas, traer y enviar.
 - **Se actualiza solo** cuando el repositorio cambia en el disco, también si lo cambia otra herramienta.
 
 Es un único ejecutable portable, sin instalador, sin cuentas y sin telemetría. La interfaz está en español.
+
+## Capturas
+
+| | |
+|---|---|
+| ![Lista de repositorios con grupos, favoritos y la rama de cada uno](docs/img/home.png) | ![Detalle de un commit con su diff](docs/img/commit.png) |
+| **Repositorios:** grupos, favoritos y la rama actual de cada uno. | **Commits:** autor, fecha, padres, archivos y el diff de cada uno. |
+| ![Herramienta de conflictos con la versión propia y la entrante](docs/img/conflict.png) | ![Acerca de GitPeach, con los atajos de teclado](docs/img/about.png) |
+| **Conflictos:** elige tu versión, la entrante, ambas o escribe el resultado. | **Acerca de (F1):** versión, atajos de teclado y dónde se guarda la configuración. |
 
 ## Características
 
@@ -146,7 +160,8 @@ GitPeach/
 ├── build.cmd · build.sh · dev.cmd · GitPeach.sln
 ├── docs/
 │   ├── ARQUITECTURA.md      capas, MVVM + DI, convenciones
-│   └── DISENO.md            sistema de diseño (colores, tipografía, componentes, patrones)
+│   ├── DISENO.md            sistema de diseño (colores, tipografía, componentes, patrones)
+│   └── img/                 capturas (con repositorios de ejemplo)
 ├── src/GitPeach/
 │   ├── Git/                 GitRunner (único lugar que ejecuta git), GitRepository, parsers puros, grafo
 │   ├── Models/              commits, status, refs, diff, blame, opciones
