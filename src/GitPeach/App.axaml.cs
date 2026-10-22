@@ -27,6 +27,7 @@ public partial class App : Application
             // Debug runs stay anonymous so they never replace the location of the real build.
             PeachApps.Announce("GitPeach");
 #endif
+            Updater.CleanupOld();
             var runner = services.GetRequiredService<IGitRunner>();
             if (!string.IsNullOrWhiteSpace(store.State.GitPath) && File.Exists(store.State.GitPath))
                 runner.GitExe = store.State.GitPath;
@@ -40,7 +41,14 @@ public partial class App : Application
                 PlaceWindow(window, store.State, shown: true);
                 window.Opacity = 1;
                 if (desktop.Args is { Length: > 0 } args) _ = vm.OpenFromArgsAsync(args);
+                // A few seconds in, so the check never competes with opening the saved tabs.
+                // Debug runs only check when GITPEACH_FAKE_VERSION asks for it.
+#if DEBUG
+                if (Environment.GetEnvironmentVariable("GITPEACH_FAKE_VERSION") is not null)
+#endif
+                Avalonia.Threading.DispatcherTimer.RunOnce(() => _ = vm.CheckForUpdatesAsync(manual: false), TimeSpan.FromSeconds(5));
             };
+            vm.CloseRequested += window.Close;
             SingleInstance.Received += args => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _ = vm.OpenFromArgsAsync(args);

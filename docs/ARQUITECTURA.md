@@ -2,7 +2,7 @@
 
 <!-- peach-hijo: ARQUITECTURA v1.0 -->
 Cliente de git de escritorio (el diseño está en [DISENO.md](DISENO.md)). Los servicios *comunes*
-(`PeachApps`, `SingleInstance`, `TextPeachLocator`, `RepoGrouping`) siguen el mismo modelo que en TextPeach y
+(`PeachApps`, `SingleInstance`, `TextPeachLocator`, `RepoGrouping`, `Updater`) siguen el mismo modelo que en TextPeach y
 RestPeach; si los cambias, avísalo en el *pull request*.
 
 **Patrón:** MVVM (CommunityToolkit.Mvvm) + inyección de dependencias (Microsoft.Extensions.DependencyInjection).
@@ -24,7 +24,7 @@ ViewModels ──► Services (IDialogService, IShellService, IClipboardService,
 |---|---|
 | `Git/` | `GitRunner` ejecuta git. `GitRepository` es una fachada que arma argumentos y parsea salida. `Parsers/` son funciones puras (testeadas). |
 | `Models/` | Datos inmutables o casi: commits, status, refs, diff, blame, opciones de push/pull. |
-| `Services/` | Interfaces para la UI y el sistema (`Abstractions.cs`), estado persistente, watcher del disco. |
+| `Services/` | Interfaces para la UI y el sistema (`Abstractions.cs`), estado persistente, watcher del disco, `Updater` (releases de GitHub, descarga verificada y reemplazo del exe en uso). |
 | `ViewModels/` | Estado y comportamiento de pantalla. |
 | `Views/` | XAML, implementaciones de servicios que necesitan Avalonia (`DialogService`, `WindowService`, `ClipboardService`). |
 

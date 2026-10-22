@@ -3,6 +3,8 @@ namespace GitPeach.Services;
 // View-model-facing abstractions. View models never touch Avalonia windows, Process or the
 // clipboard directly, which keeps them testable and the UI swappable (dependency inversion).
 
+public enum UpdateChoice { Later, Install, Skip }
+
 public interface IDialogService
 {
     /// <summary>Null buttons read "OK" / "Cancel" in the interface language.</summary>
@@ -10,8 +12,12 @@ public interface IDialogService
     Task Message(string title, string message);
     /// <summary>F1 / "?": app name, version and description, then the keyboard shortcuts.</summary>
     /// <summary>Also the language switch: <paramref name="savedLanguage"/> is the saved choice (null = system).</summary>
+    /// <summary>And the updates row: <paramref name="checkUpdates"/> is the saved switch, <paramref name="checkNow"/> runs after closing.</summary>
     Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups,
-        Action openDataFolder, string? savedLanguage, Action<string> chooseLanguage);
+        Action openDataFolder, string? savedLanguage, Action<string> chooseLanguage,
+        bool checkUpdates, Action<bool> setCheckUpdates, Func<Task> checkNow);
+    /// <summary>The button next to "?": release notes and Update / Not now / Skip. Closing it is "Not now".</summary>
+    Task<UpdateChoice> Update(UpdateInfo update, Version current);
     Task<string?> Prompt(string title, string label, string initial = "");
     Task<string[]?> Form(string title, (string Label, string Initial)[] fields, string? ok = null);
     /// <summary>Lets the user pick one of <paramref name="options"/>; null when cancelled.</summary>

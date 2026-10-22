@@ -45,6 +45,25 @@ internal static class Strings
         ["dlg.quickOpen.title"] = ("Open repository", "Abrir repositorio"),
         ["dlg.quickOpen.search"] = ("Search repository...", "Buscar repositorio..."),
 
+        // ---- updates
+        ["update.tip"] = ("A new version of GitPeach is available", "Hay una versión nueva de GitPeach"),
+        ["update.title"] = ("GitPeach {0} is available", "GitPeach {0} está disponible"),
+        ["update.text"] = ("You have version {0}. Version {1} brings:", "Tienes la versión {0}. La {1} trae:"),
+        ["update.restartNote"] = ("GitPeach downloads it, restarts and reopens your tabs.", "GitPeach la descarga, se reinicia y vuelve a abrir tus pestañas."),
+        ["update.install"] = ("Update and restart", "Actualizar y reiniciar"),
+        ["update.later"] = ("Not now", "Ahora no"),
+        ["update.skip"] = ("Skip this version", "Omitir esta versión"),
+        ["update.page"] = ("See on GitHub", "Ver en GitHub"),
+        ["update.downloading"] = ("Downloading {0} %", "Descargando {0} %"),
+        ["update.failed.title"] = ("Could not update", "No se pudo actualizar"),
+        ["update.failed.text"] = ("{0}\n\nYou can download the new version from its page and replace GitPeach by hand.", "{0}\n\nPuedes descargar la versión nueva desde su página y reemplazar GitPeach a mano."),
+        ["update.openPage"] = ("Open download page", "Abrir página de descarga"),
+        ["update.check.title"] = ("Updates", "Actualizaciones"),
+        ["update.check.failed"] = ("Could not reach GitHub to look for a new version.\n\n{0}", "No se pudo consultar GitHub para buscar una versión nueva.\n\n{0}"),
+        ["update.upToDate"] = ("GitPeach {0} is the latest version.", "GitPeach {0} es la versión más reciente."),
+        ["update.auto"] = ("Check for updates once a day", "Buscar actualizaciones una vez al día"),
+        ["update.checkNow"] = ("Check now", "Buscar ahora"),
+
         // ---- keys
         ["keys.group.general"] = ("General", "General"),
         ["keys.group.repo"] = ("Repository", "Repositorio"),
