@@ -48,8 +48,8 @@ template: |
   $CHANGES
 
   **Download / Descarga**
-  - Windows, installer / instalador: `GitPeach-Setup.exe` (Start menu and Settings > Apps, no admin / menú Inicio y Configuración > Aplicaciones, sin administrador)
-  - Windows, portable: `GitPeach.exe`
-  - Linux: `GitPeach-linux-x64.tar.gz`: portable `./GitPeach`, or install / o instalar `./install.sh` (app menu / menú de aplicaciones)
+  - Windows, installer / instalador: `gitpeach-windows-x64-setup.exe` (Start menu and Settings > Apps, no admin / menú Inicio y Configuración > Aplicaciones, sin administrador)
+  - Windows, portable: `gitpeach-windows-x64-portable.exe`
+  - Linux: `gitpeach-linux-x64.tar.gz`: portable `./GitPeach`, or install / o instalar `./install.sh` (app menu / menú de aplicaciones)
 
   **Full changelog:** https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

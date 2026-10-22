@@ -59,7 +59,7 @@
 11. **Lo que solo se lee nunca parece editable.** Mensajes, el log, atajos y diffs se muestran con
     `TextBlock`/`SelectableTextBlock`; `TextBox` es solo para escribir (mensaje de commit, búsqueda).
 12. **Portable y autocontenido.** Un único `.exe` que funciona sin instalar; con `portable.txt` al lado, los
-    datos se guardan junto al exe. El instalador (`GitPeach-Setup.exe`, `install.sh`) es opcional: copia ese mismo
+    datos se guardan junto al exe. El instalador (`gitpeach-windows-x64-setup.exe`, `install.sh`) es opcional: copia ese mismo
     exe a una carpeta del usuario, lo registra en el buscador del sistema y deja `installed.txt` al lado.
 13. **Actualizar no interrumpe.** Una versión nueva solo se nota como un botón **↑ x.y.z** junto al **?**; nada
     se descarga sin confirmar en su popup (Actualizar y reiniciar / Ahora no / Omitir esta versión).
