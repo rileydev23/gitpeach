@@ -1,44 +1,44 @@
+using GitPeach.Services;
+
 namespace GitPeach.ViewModels;
 
 /// <summary>Single source for the keyboard shortcuts shown in the help dialog (F1).</summary>
 public static class Shortcuts
 {
-    public static readonly (string Gesture, string Description)[] Global =
-    {
-        ("Ctrl+P", "Abrir repositorio (búsqueda rápida)"),
-        ("Ctrl+Tab / Ctrl+Shift+Tab", "Pestaña siguiente / anterior"),
-        ("Ctrl+1 … Ctrl+9", "Ir a la pestaña N"),
-        ("Ctrl+W", "Cerrar pestaña"),
-        ("F1", "Acerca de y atajos de teclado"),
-    };
+    public static (string Gesture, string Description)[] Global =>
+    [
+        ("Ctrl+P", Loc.T("keys.quickOpen")),
+        ("Ctrl+Tab / Ctrl+Shift+Tab", Loc.T("keys.nextTab")),
+        ("Ctrl+1 … Ctrl+9", Loc.T("keys.tabN")),
+        ("Ctrl+W", Loc.T("keys.closeTab")),
+        ("F1", Loc.T("keys.about")),
+    ];
 
-    public static readonly (string Gesture, string Description)[] Repo =
-    {
-        ("F5", "Refrescar"),
-        ("Ctrl+F", "Buscar en el historial"),
+    public static (string Gesture, string Description)[] Repo =>
+    [
+        ("F5", Loc.T("keys.refresh")),
+        ("Ctrl+F", Loc.T("keys.search")),
         ("Ctrl+Shift+F", "Fetch"),
         ("Ctrl+Shift+L", "Pull"),
         ("Ctrl+Shift+P", "Push"),
-        ("Ctrl+B", "Nueva rama"),
+        ("Ctrl+B", Loc.T("keys.newBranch")),
         ("Ctrl+Shift+S", "Stash"),
-        ("Ctrl+Shift+O", "Pop del último stash"),
-        ("Ctrl+Shift+A", "Stage de todo"),
-        ("Ctrl+Shift+U", "Unstage de todo"),
+        ("Ctrl+Shift+O", Loc.T("keys.pop")),
+        ("Ctrl+Shift+A", Loc.T("keys.stageAll")),
+        ("Ctrl+Shift+U", Loc.T("keys.unstageAll")),
         ("Ctrl+Enter", "Commit"),
-        ("Ctrl+L", "Mostrar / ocultar el log de comandos"),
-        ("Esc (en la búsqueda)", "Limpiar la búsqueda"),
-        ("Doble clic en un archivo", "Verlo en el visor, o resolver el conflicto"),
-    };
+        ("Ctrl+L", Loc.T("keys.log")),
+        (Loc.T("keys.escSearch"), Loc.T("keys.clearSearch")),
+        (Loc.T("keys.doubleClick"), Loc.T("keys.doubleClick.desc")),
+    ];
 
-    public static readonly (string Gesture, string Description)[] Viewer =
-    {
-        ("Ctrl+E", "Editar / volver a solo lectura"),
-        ("Ctrl+S", "Guardar (también en la resolución de conflictos)"),
-        ("Esc", "Cerrar la ventana"),
-    };
-
-    public const string AboutText = "Cliente de git para escritorio: historial con grafo, cambios, diffs, ramas, stashes y remotos de varios repositorios en pestañas.";
+    public static (string Gesture, string Description)[] Viewer =>
+    [
+        ("Ctrl+E", Loc.T("keys.edit")),
+        ("Ctrl+S", Loc.T("keys.save")),
+        ("Esc", Loc.T("keys.closeWindow")),
+    ];
 
     public static (string Title, (string Gesture, string Description)[] Items)[] Groups =>
-        new[] { ("General", Global), ("Repositorio", Repo), ("Visor de archivos", Viewer) };
+        [(Loc.T("keys.group.general"), Global), (Loc.T("keys.group.repo"), Repo), (Loc.T("keys.group.viewer"), Viewer)];
 }

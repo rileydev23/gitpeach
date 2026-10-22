@@ -50,8 +50,9 @@
    ([9](#9-teclado)).
 8. **Estado persistente.** Repositorios, grupos, favoritos, pestañas, ventana y preferencias se guardan solos en
    `state.json`.
-9. **Español en la interfaz, inglés en el código** (los textos todavía no están en inglés:
-   [13](#13-diferencias-pendientes-con-el-resto-de-la-familia)).
+9. **Interfaz en inglés y español, código en inglés.** Todo texto visible está en `Services/Strings.cs`
+   (par inglés/español) y se usa con `Loc.T`/`Loc.F`/`Loc.Plural` o `{l:L clave}`; el idioma sigue al del
+   sistema y se cambia en "Acerca de" (se aplica al reiniciar).
 10. **Sin nombres de terceros.** La interfaz no menciona ni lanza editores ni servicios de terceros. Lo
     permitido: las herramientas del sistema que hacen falta para trabajar (**Explorador**, **Terminal**), "abrir
     con la aplicación predeterminada" y la app hermana **TextPeach** para leer código.
@@ -410,7 +411,6 @@ Lo que GitPeach todavía hace distinto de TextPeach y RestPeach. Al cerrar una, 
 
 | Qué | Familia | GitPeach hoy |
 |---|---|---|
-| Idiomas | Inglés y español (`Services/Strings.cs` + `Loc`, selector en "Acerca de") | Solo español, textos en XAML y C# |
 | `Ctrl+Shift+F` | Búsqueda amplia (en todo el proyecto) | Fetch |
 | `Ctrl+Shift+O` | Abrir proyecto / repositorio (búsqueda rápida) | Pop del último stash |
 | `Ctrl+W` | Cierra el documento actual o, si no hay, la pestaña; también `Ctrl+F4` | Cierra la pestaña |

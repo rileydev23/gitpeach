@@ -6,7 +6,7 @@ using GitPeach.Services;
 
 namespace GitPeach.ViewModels;
 
-/// <summary>The "Repositorios" tab: saved repositories, organised in collapsible groups.</summary>
+/// <summary>The "Repositories" tab: saved repositories, organised in collapsible groups.</summary>
 public partial class HomeViewModel : TabViewModel
 {
     private readonly IAppStateStore _store;
@@ -37,7 +37,7 @@ public partial class HomeViewModel : TabViewModel
         _git = git;
         _dialogs = dialogs;
         _shell = shell;
-        Title = "Repositorios";
+        Title = Loc.T("home.title");
         Reload();
         _ = RefreshBranchesAsync();
     }
@@ -127,8 +127,8 @@ public partial class HomeViewModel : TabViewModel
         var existing = repos.Where(r => Directory.Exists(r.Path)).ToList();
         foreach (var r in existing) OpenRequested?.Invoke(r);
         Status = existing.Count == repos.Count
-            ? $"Abiertos {existing.Count} repositorios"
-            : $"Abiertos {existing.Count} de {repos.Count} (algunas carpetas ya no existen)";
+            ? Loc.F("home.openedAll", existing.Count)
+            : Loc.F("home.openedSome", existing.Count, repos.Count);
     }
 
     [RelayCommand]
@@ -136,7 +136,7 @@ public partial class HomeViewModel : TabViewModel
 
     private async Task MoveToNewGroup(IReadOnlyList<RepoEntry> repos)
     {
-        var name = await _dialogs.Prompt("Nuevo grupo", "Nombre del grupo", RepoGrouping.UniqueName(State, "Grupo"));
+        var name = await _dialogs.Prompt(Loc.T("home.newGroup.title"), Loc.T("home.newGroup.label"), RepoGrouping.UniqueName(State, Loc.T("home.newGroup.default")));
         if (string.IsNullOrWhiteSpace(name)) return;
         var group = RepoGrouping.Ensure(State, name);
         group.Collapsed = false;
@@ -150,17 +150,17 @@ public partial class HomeViewModel : TabViewModel
         Reload();
         if (repos.Count > 0)
             Status = group is null
-                ? $"{Plural(repos.Count)} sin grupo"
-                : $"{Plural(repos.Count)} en el grupo \"{group.Name}\"";
+                ? Loc.F("home.moved.none", Plural(repos.Count))
+                : Loc.F("home.moved.group", Plural(repos.Count), group.Name);
     }
 
     private async Task RenameGroup(RepoGroup group)
     {
-        var name = await _dialogs.Prompt("Renombrar grupo", "Nuevo nombre", group.Name);
+        var name = await _dialogs.Prompt(Loc.T("home.renameGroup.title"), Loc.T("home.renameGroup.label"), group.Name);
         if (string.IsNullOrWhiteSpace(name) || name.Trim() == group.Name) return;
         if (!RepoGrouping.Rename(State, group, name))
         {
-            await _dialogs.Message("Renombrar grupo", $"Ya existe un grupo llamado \"{name.Trim()}\".");
+            await _dialogs.Message(Loc.T("home.renameGroup.title"), Loc.F("home.renameGroup.exists", name.Trim()));
             return;
         }
         _store.Save();
@@ -171,15 +171,15 @@ public partial class HomeViewModel : TabViewModel
     {
         var count = RepoGrouping.Members(State, group).Count();
         var message = removeRepos
-            ? $"Se quitará el grupo \"{group.Name}\" y sus {Plural(count)} de la lista.\nNo se borra nada del disco."
-            : $"Se eliminará el grupo \"{group.Name}\". Sus {Plural(count)} pasarán a \"Sin grupo\".";
-        if (count > 0 && !await _dialogs.Confirm("Eliminar grupo", message, "Eliminar")) return;
+            ? Loc.F("home.deleteGroup.withRepos", group.Name, Plural(count))
+            : Loc.F("home.deleteGroup.keepRepos", group.Name, Plural(count), Loc.T("home.ungrouped"));
+        if (count > 0 && !await _dialogs.Confirm(Loc.T("home.deleteGroup.title"), message, Loc.T("common.delete"))) return;
         RepoGrouping.Delete(State, group, removeRepos);
         _store.Save();
         Reload();
     }
 
-    private static string Plural(int n) => n == 1 ? "1 repositorio" : $"{n} repositorios";
+    private static string Plural(int n) => Loc.Plural("common.repos", n);
 
     // ---------------------------------------------------------------- menus
 
@@ -189,15 +189,15 @@ public partial class HomeViewModel : TabViewModel
         var repos = RepoGrouping.Members(State, g).ToList();
         var items = new List<MenuAction>
         {
-            MenuAction.Sync($"Abrir todos ({repos.Count})", () => OpenAll(repos)),
-            MenuAction.Sync(header.IsCollapsed ? "Expandir" : "Contraer", () => ToggleGroup(g)),
+            MenuAction.Sync(Loc.F("home.menu.openAll", repos.Count), () => OpenAll(repos)),
+            MenuAction.Sync(header.IsCollapsed ? Loc.T("home.menu.expand") : Loc.T("home.menu.collapse"), () => ToggleGroup(g)),
         };
         if (g is not null)
         {
             items.Add(MenuAction.Separator);
-            items.Add(new MenuAction("Renombrar grupo…", () => RenameGroup(g)));
-            items.Add(new MenuAction("Eliminar grupo (los repositorios quedan sin grupo)…", () => DeleteGroup(g, removeRepos: false)));
-            items.Add(new MenuAction("Quitar el grupo y sus repositorios de la lista…", () => DeleteGroup(g, removeRepos: true)));
+            items.Add(new MenuAction(Loc.T("home.menu.renameGroup"), () => RenameGroup(g)));
+            items.Add(new MenuAction(Loc.T("home.menu.deleteGroup"), () => DeleteGroup(g, removeRepos: false)));
+            items.Add(new MenuAction(Loc.T("home.menu.removeGroup"), () => DeleteGroup(g, removeRepos: true)));
         }
         return MenuList.Clean(items);
     }
@@ -209,10 +209,10 @@ public partial class HomeViewModel : TabViewModel
         var items = new List<MenuAction>
         {
             single is not null
-                ? MenuAction.Sync("Abrir", () => Open(single))
-                : MenuAction.Sync($"Abrir los {repos.Count}", () => OpenAll(repos)),
+                ? MenuAction.Sync(Loc.T("common.open"), () => Open(single))
+                : MenuAction.Sync(Loc.F("home.menu.openN", repos.Count), () => OpenAll(repos)),
         };
-        if (single is not null) items.Add(MenuAction.Sync("Favorito (alternar)", () => ToggleFavorite(single)));
+        if (single is not null) items.Add(MenuAction.Sync(Loc.T("home.menu.favorite"), () => ToggleFavorite(single)));
 
         items.Add(MenuAction.Separator);
         var targets = new List<MenuAction>();
@@ -223,19 +223,19 @@ public partial class HomeViewModel : TabViewModel
             targets.Add(MenuAction.Sync(group.Name, () => MoveTo(repos, group)));
         }
         if (targets.Count > 0) targets.Add(MenuAction.Separator);
-        targets.Add(new MenuAction("Nuevo grupo…", () => MoveToNewGroup(repos)));
-        items.Add(MenuAction.Submenu(repos.Count == 1 ? "Mover a grupo" : $"Mover los {repos.Count} a grupo", targets));
+        targets.Add(new MenuAction(Loc.T("home.menu.newGroup"), () => MoveToNewGroup(repos)));
+        items.Add(MenuAction.Submenu(repos.Count == 1 ? Loc.T("home.menu.moveTo") : Loc.F("home.menu.moveNTo", repos.Count), targets));
         if (repos.Any(r => RepoGrouping.Find(State, r.Group) is not null))
-            items.Add(MenuAction.Sync("Quitar del grupo", () => MoveTo(repos, null)));
+            items.Add(MenuAction.Sync(Loc.T("home.menu.ungroup"), () => MoveTo(repos, null)));
 
         if (single is not null)
         {
             items.Add(MenuAction.Separator);
-            items.Add(MenuAction.Sync("Abrir en el Explorador", () => OpenInExplorer(single)));
-            items.Add(MenuAction.Sync("Abrir terminal aquí", () => OpenInTerminal(single)));
+            items.Add(MenuAction.Sync(Loc.T("menu.openExplorer"), () => OpenInExplorer(single)));
+            items.Add(MenuAction.Sync(Loc.T("menu.openTerminal"), () => OpenInTerminal(single)));
         }
         items.Add(MenuAction.Separator);
-        items.Add(MenuAction.Sync(single is not null ? "Quitar de la lista" : $"Quitar los {repos.Count} de la lista", () => RemoveMany(repos)));
+        items.Add(MenuAction.Sync(single is not null ? Loc.T("home.menu.remove") : Loc.F("home.menu.removeN", repos.Count), () => RemoveMany(repos)));
         return MenuList.Clean(items);
     }
 
@@ -248,7 +248,7 @@ public partial class HomeViewModel : TabViewModel
         if (entry is null) return;
         if (!Directory.Exists(entry.Path))
         {
-            Status = $"La carpeta ya no existe: {entry.Path}";
+            Status = Loc.F("home.missingFolder", entry.Path);
             return;
         }
         OpenRequested?.Invoke(entry);
@@ -257,7 +257,7 @@ public partial class HomeViewModel : TabViewModel
     [RelayCommand]
     private async Task AddAsync()
     {
-        var dir = await _dialogs.PickFolder("Seleccionar repositorio");
+        var dir = await _dialogs.PickFolder(Loc.T("home.pick.repo"));
         if (dir is null) return;
         await AddPathAsync(dir, open: true);
     }
@@ -269,13 +269,13 @@ public partial class HomeViewModel : TabViewModel
         if (root is null)
         {
             if (Directory.Exists(dir)) { await ImportFolderAsGroupAsync(dir); return; }
-            Status = $"No es un repositorio git: {dir}";
+            Status = Loc.F("home.notRepo", dir);
             return;
         }
         var entry = _store.Add(root);
         Reload();
         SelectedRow = Rows.OfType<RepoRow>().FirstOrDefault(r => r.Entry == entry);
-        Status = $"Agregado: {entry.Name}";
+        Status = Loc.F("home.added", entry.Name);
         _ = RefreshBranchesAsync();
         if (open) OpenRequested?.Invoke(entry);
     }
@@ -283,7 +283,7 @@ public partial class HomeViewModel : TabViewModel
     [RelayCommand]
     private async Task ScanAsync()
     {
-        var dir = await _dialogs.PickFolder("Carpeta a escanear");
+        var dir = await _dialogs.PickFolder(Loc.T("home.pick.scan"));
         if (dir is not null) await ImportFolderAsGroupAsync(dir);
     }
 
@@ -294,13 +294,13 @@ public partial class HomeViewModel : TabViewModel
     private async Task ImportFolderAsGroupAsync(string dir)
     {
         Busy = true;
-        Status = "Escaneando...";
+        Status = Loc.T("home.scanning");
         try
         {
             var found = await Task.Run(() => FindRepos(dir, 5));
             if (found.Count == 0)
             {
-                Status = $"No se encontraron repositorios en {dir}";
+                Status = Loc.F("home.scan.none", dir);
                 return;
             }
             var name = Path.GetFileName(dir.TrimEnd('\\', '/'));
@@ -318,8 +318,8 @@ public partial class HomeViewModel : TabViewModel
             _store.Save();
             Reload();
             _ = RefreshBranchesAsync();
-            Status = $"Grupo \"{group.Name}\": {Plural(found.Count)} encontrados, {added} nuevos" +
-                     (kept > 0 ? $", {kept} ya estaban en otro grupo" : "") + ".";
+            Status = Loc.F("home.scan.done", group.Name, Plural(found.Count), added) +
+                     (kept > 0 ? Loc.F("home.scan.kept", kept) : "") + ".";
         }
         finally { Busy = false; }
     }
@@ -354,19 +354,19 @@ public partial class HomeViewModel : TabViewModel
     [RelayCommand]
     private async Task CloneAsync()
     {
-        var f = await _dialogs.Form("Clonar repositorio", new[] { ("URL del repositorio", ""), ("Carpeta de destino", "") }, "Clonar");
+        var f = await _dialogs.Form(Loc.T("home.clone.title"), new[] { (Loc.T("home.clone.url"), ""), (Loc.T("home.clone.dest"), "") }, Loc.T("home.clone.ok"));
         if (f is null || string.IsNullOrWhiteSpace(f[0])) return;
         var url = f[0].Trim();
         var dest = f[1].Trim();
         if (dest.Length == 0)
         {
-            var parent = await _dialogs.PickFolder("Carpeta donde clonar");
+            var parent = await _dialogs.PickFolder(Loc.T("home.clone.pickParent"));
             if (parent is null) return;
             var name = Path.GetFileNameWithoutExtension(url.TrimEnd('/', '\\'));
             dest = Path.Combine(parent, name);
         }
         Busy = true;
-        Status = "Clonando...";
+        Status = Loc.T("home.cloning");
         try
         {
             var res = await _git.Clone(url, dest, chunk =>
@@ -376,8 +376,8 @@ public partial class HomeViewModel : TabViewModel
             }, CancellationToken.None);
             if (!res.Ok)
             {
-                Status = "Clonado falló";
-                await _dialogs.Message("Error al clonar", res.Message);
+                Status = Loc.T("home.clone.failed");
+                await _dialogs.Message(Loc.T("home.clone.error"), res.Message);
                 return;
             }
             await AddPathAsync(dest, open: true);
@@ -390,8 +390,8 @@ public partial class HomeViewModel : TabViewModel
         foreach (var r in repos) _store.Remove(r);
         Reload();
         Status = repos.Count == 1
-            ? $"Quitado de la lista: {repos[0].Name} (no se borró nada del disco)"
-            : $"Quitados {repos.Count} repositorios de la lista (no se borró nada del disco)";
+            ? Loc.F("home.removed.one", repos[0].Name)
+            : Loc.F("home.removed.many", repos.Count);
     }
 
     [RelayCommand]

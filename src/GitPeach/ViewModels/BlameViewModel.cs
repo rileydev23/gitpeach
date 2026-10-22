@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using GitPeach.Controls;
 using GitPeach.Git;
 using GitPeach.Models;
+using GitPeach.Services;
 
 namespace GitPeach.ViewModels;
 
@@ -14,7 +15,7 @@ public sealed partial class BlameViewModel : ObservableObject
     public string Title => Revision is null ? $"Blame — {FilePath}" : $"Blame — {FilePath} @ {Revision[..Math.Min(8, Revision.Length)]}";
 
     [ObservableProperty] private IReadOnlyList<BlameRowVM> _rows = Array.Empty<BlameRowVM>();
-    [ObservableProperty] private string _status = "Cargando blame…";
+    [ObservableProperty] private string _status = Loc.T("blame.loading");
 
     public BlameViewModel(IGitQueries git, string path, string? revision)
     {
@@ -29,8 +30,8 @@ public sealed partial class BlameViewModel : ObservableObject
         Rows = await Task.Run(() => BuildRows(lines));
         var commits = lines.Select(l => l.Hash).Distinct().Count();
         Status = lines.Count == 0
-            ? "No se pudo obtener el blame (¿archivo binario o sin commits?)."
-            : $"{lines.Count} líneas · {commits} commit{(commits == 1 ? "" : "s")}";
+            ? Loc.T("blame.failed")
+            : $"{Loc.Plural("viewer.lines", lines.Count)} · {Loc.Plural("common.commits", commits)}";
     }
 
     /// <summary>Consecutive lines from the same commit form a group; groups alternate background.</summary>

@@ -3,6 +3,7 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GitPeach.Controls;
 using GitPeach.Models;
+using GitPeach.Services;
 
 namespace GitPeach.ViewModels;
 
@@ -143,10 +144,10 @@ public sealed class BlameRowVM
     /// <summary>Commit info is printed only on the first line of each run of lines from the same commit.</summary>
     public bool IsGroupStart { get; init; }
     public IBrush Background { get; init; } = Palette.Transparent;
-    public string ShortHash => IsGroupStart ? (Line.IsUncommitted ? "sin commit" : Line.ShortHash) : "";
+    public string ShortHash => IsGroupStart ? (Line.IsUncommitted ? Loc.T("blame.uncommitted") : Line.ShortHash) : "";
     public string Author => IsGroupStart ? Line.Author : "";
     public string DateText => IsGroupStart && !Line.IsUncommitted ? Line.Date.ToString("yyyy-MM-dd") : "";
     public string LineNo => Line.LineNo.ToString();
     public string Text => Line.Text;
-    public string Tooltip => Line.IsUncommitted ? "Cambios sin commit" : $"{Line.ShortHash} · {Line.Author} · {Line.Date:yyyy-MM-dd HH:mm}\n{Line.Summary}";
+    public string Tooltip => Line.IsUncommitted ? Loc.T("blame.uncommitted.tip") : $"{Line.ShortHash} · {Line.Author} · {Line.Date:yyyy-MM-dd HH:mm}\n{Line.Summary}";
 }

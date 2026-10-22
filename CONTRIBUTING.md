@@ -52,8 +52,10 @@ blank line and more detail when the *why* is not obvious.
 
 ### Code conventions
 
-- **The interface is in Spanish** (neutral Spanish, *tuteo*, capital letter only at the start). Code, names
-  and comments are in English.
+- **The interface is in English and Spanish.** Every visible text lives in `Services/Strings.cs` as an
+  (English, Spanish) pair and is used with `Loc.T("key")` in code or `{l:L key}` in XAML; a test fails if a key
+  is missing. Spanish: neutral, *tuteo*, capital letter only at the start. Code, names and comments are in
+  English.
 - Follow the architecture in [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): view models never touch Avalonia,
   `Process` or the clipboard directly, only service interfaces; **git only runs through `IGitRunner`**; output
   is parsed by pure functions in `Git/Parsers`.
@@ -142,8 +144,9 @@ cambio). Agrega una línea en blanco y más detalle cuando el *porqué* no sea o
 
 ### Convenciones de código
 
-- **La interfaz está en español** (español neutro, tuteo, mayúscula solo al inicio). Código, nombres y
-  comentarios en inglés.
+- **La interfaz está en inglés y español.** Todo texto visible va en `Services/Strings.cs` como par (inglés,
+  español) y se usa con `Loc.T("clave")` en el código o `{l:L clave}` en XAML; un test falla si falta una
+  clave. Español neutro, tuteo, mayúscula solo al inicio. Código, nombres y comentarios en inglés.
 - Respeta la arquitectura de [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): los view models nunca tocan
   Avalonia, `Process` ni el portapapeles directamente, solo interfaces de servicios; **git solo se ejecuta a
   través de `IGitRunner`**; su salida la interpretan funciones puras en `Git/Parsers`.

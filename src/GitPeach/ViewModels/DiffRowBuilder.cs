@@ -21,7 +21,7 @@ public sealed class HunkActions(IRepoSession session, IGitWorkingTree git, IDial
     public ICommand Unstage(DiffFile f, DiffHunk h) => new AsyncRelayCommand(() => session.PerformQuiet(() => git.UnstageHunk(f, h)));
     public ICommand Discard(DiffFile f, DiffHunk h) => new AsyncRelayCommand(async () =>
     {
-        if (await dialogs.Confirm("Descartar hunk", "¿Descartar estos cambios? Esta acción no se puede deshacer.", "Descartar"))
+        if (await dialogs.Confirm(Loc.T("diff.discardHunk.title"), Loc.T("diff.discardHunk.text"), Loc.T("common.discard")))
             await session.PerformQuiet(() => git.DiscardHunk(f, h));
     });
 }
@@ -45,12 +45,12 @@ public static class DiffRowBuilder
 
             if (file.IsBinary)
             {
-                rows.Add(Note("Archivo binario no mostrado"));
+                rows.Add(Note(Loc.T("diff.binary")));
                 continue;
             }
             if (file.Hunks.Count == 0)
             {
-                rows.Add(Note(file.IsNew ? "Archivo vacío" : "Sin cambios de contenido (permisos o renombrado)"));
+                rows.Add(Note(Loc.T(file.IsNew ? "diff.empty" : "diff.noContent")));
                 continue;
             }
 
@@ -84,7 +84,7 @@ public static class DiffRowBuilder
                 }
                 if (rows.Count > MaxRows)
                 {
-                    rows.Add(Note($"Diff truncado a {MaxRows} líneas"));
+                    rows.Add(Note(Loc.F("diff.truncated", MaxRows)));
                     return rows;
                 }
             }

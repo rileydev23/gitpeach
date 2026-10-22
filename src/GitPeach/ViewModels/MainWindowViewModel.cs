@@ -43,7 +43,7 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// <c>GitPeach.exe &lt;carpeta&gt;</c> (TextPeach's branch button, for instance): adds the repository if needed and
+    /// <c>GitPeach.exe &lt;folder&gt;</c> (TextPeach's branch button, for instance): adds the repository if needed and
     /// opens it in a tab. A folder of repositories is imported as a group, as when it is dropped on the window.
     /// </summary>
     public async Task OpenFromArgsAsync(IEnumerable<string> args)
@@ -127,7 +127,12 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task ShowAbout() => _dialogs.About(Shortcuts.AboutText, _store.DataFolder, Shortcuts.Groups, () => _shell.OpenFolder(_store.DataFolder));
+    private Task ShowAbout() => _dialogs.About(Loc.T("about.text"), _store.DataFolder, Shortcuts.Groups,
+        () => _shell.OpenFolder(_store.DataFolder), _store.State.Language, code =>
+        {
+            _store.State.Language = code;
+            _store.Save();
+        });
 
     public bool IsHomeSelected => SelectedTab == Home;
 

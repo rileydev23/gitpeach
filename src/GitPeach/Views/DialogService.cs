@@ -58,14 +58,14 @@ public sealed class DialogService : IDialogService
         return panel;
     }
 
-    public async Task<bool> Confirm(string title, string message, string ok = "Aceptar", string cancel = "Cancelar")
+    public async Task<bool> Confirm(string title, string message, string? ok = null, string? cancel = null)
     {
         var owner = Owner;
         if (owner is null) return false;
         var w = Make(title, 440);
         bool result = false;
-        var okBtn = Btn(ok, true);
-        var cancelBtn = Btn(cancel);
+        var okBtn = Btn(ok ?? Loc.T("common.ok"), true);
+        var cancelBtn = Btn(cancel ?? Loc.T("common.cancel"));
         okBtn.Click += (_, _) => { result = true; w.Close(); };
         cancelBtn.Click += (_, _) => w.Close();
         w.Content = new StackPanel
@@ -87,7 +87,7 @@ public sealed class DialogService : IDialogService
         var owner = Owner;
         if (owner is null) return;
         var w = Make(title, 520);
-        var ok = Btn("Cerrar", true);
+        var ok = Btn(Loc.T("common.close"), true);
         ok.Click += (_, _) => w.Close();
         w.Content = new StackPanel
         {
@@ -108,15 +108,16 @@ public sealed class DialogService : IDialogService
         await w.ShowDialog(owner);
     }
 
-    public async Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups, Action openDataFolder)
+    public async Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups,
+        Action openDataFolder, string? savedLanguage, Action<string> chooseLanguage)
     {
         var owner = Owner;
         if (owner is null) return;
-        var w = Make("Acerca de GitPeach", 520);
+        var w = Make(Loc.T("dlg.about.title"), 520);
         var version = typeof(DialogService).Assembly.GetName().Version;
-        var close = Btn("Cerrar", true);
+        var close = Btn(Loc.T("common.close"), true);
         close.Click += (_, _) => w.Close();
-        var openData = Btn("Abrir carpeta de configuración");
+        var openData = Btn(Loc.T("dlg.about.openData"));
         openData.Click += (_, _) => openDataFolder();
 
         var header = new DockPanel();
@@ -133,7 +134,7 @@ public sealed class DialogService : IDialogService
             Children =
             {
                 new TextBlock { Text = "GitPeach", FontSize = 18, FontWeight = FontWeight.SemiBold, Foreground = Palette.Text },
-                new TextBlock { Text = $"Versión {version?.ToString(3)}", Foreground = Palette.Dim, FontSize = 12 },
+                new TextBlock { Text = Loc.F("dlg.about.version", version?.ToString(3)), Foreground = Palette.Dim, FontSize = 12 },
                 new TextBlock { Text = description, Foreground = Palette.Text, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 6, 0, 0) },
             },
         });
@@ -165,7 +166,7 @@ public sealed class DialogService : IDialogService
             {
                 header,
                 new Border { Height = 1, Background = Palette.Border },
-                new TextBlock { Text = "Atajos de teclado", FontSize = 14, FontWeight = FontWeight.SemiBold, Foreground = Palette.Text },
+                new TextBlock { Text = Loc.T("dlg.about.shortcuts"), FontSize = 14, FontWeight = FontWeight.SemiBold, Foreground = Palette.Text },
                 new ScrollViewer
                 {
                     MaxHeight = 380,
@@ -173,12 +174,44 @@ public sealed class DialogService : IDialogService
                     Content = shortcuts,
                 },
                 new Border { Height = 1, Background = Palette.Border },
-                new TextBlock { Text = "Configuración guardada en: " + dataFolder, Foreground = Palette.Dim, FontSize = 11, TextWrapping = TextWrapping.Wrap },
+                LanguagePicker(savedLanguage, chooseLanguage),
+                new TextBlock { Text = Loc.F("dlg.about.dataPath", dataFolder), Foreground = Palette.Dim, FontSize = 11, TextWrapping = TextWrapping.Wrap },
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { openData, close } },
             },
         };
         w.KeyDown += (_, e) => { if (e.Key is Key.Escape or Key.Enter) w.Close(); };
         await w.ShowDialog(owner);
+    }
+
+    /// <summary>
+    /// "Idioma: [English] [Español]": the joined view switch of the design system. The choice is saved at once and
+    /// applies on the next launch, since every screen reads its texts when it is built.
+    /// </summary>
+    private static Control LanguagePicker(string? saved, Action<string> choose)
+    {
+        var note = new TextBlock { Text = Loc.T("dlg.about.languageNext"), Foreground = Palette.Amber, FontSize = 11, IsVisible = false, VerticalAlignment = VerticalAlignment.Center };
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+        row.Children.Add(new TextBlock { Text = Loc.T("dlg.about.language"), Foreground = Palette.Text, VerticalAlignment = VerticalAlignment.Center });
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal };
+        var chosen = saved ?? Loc.Current;
+        for (int i = 0; i < Loc.Languages.Length; i++)
+        {
+            var (code, name) = Loc.Languages[i];
+            var b = new Button { Content = name, Tag = code };
+            b.Classes.Add("mode");
+            b.Classes.Add(i == 0 ? "left" : "right");
+            if (code == chosen) b.Classes.Add("active");
+            b.Click += (_, _) =>
+            {
+                foreach (var other in buttons.Children.OfType<Button>()) other.Classes.Set("active", ReferenceEquals(other, b));
+                choose(code);
+                note.IsVisible = code != Loc.Current;
+            };
+            buttons.Children.Add(b);
+        }
+        row.Children.Add(buttons);
+        row.Children.Add(note);
+        return row;
     }
 
     public async Task<string?> Prompt(string title, string label, string initial = "")
@@ -187,7 +220,7 @@ public sealed class DialogService : IDialogService
         return r?[0];
     }
 
-    public async Task<string[]?> Form(string title, (string Label, string Initial)[] fields, string ok = "Aceptar")
+    public async Task<string[]?> Form(string title, (string Label, string Initial)[] fields, string? ok = null)
     {
         var owner = Owner;
         if (owner is null) return null;
@@ -202,8 +235,8 @@ public sealed class DialogService : IDialogService
             boxes.Add(tb);
             panel.Children.Add(tb);
         }
-        var okBtn = Btn(ok, true);
-        var cancel = Btn("Cancelar");
+        var okBtn = Btn(ok ?? Loc.T("common.ok"), true);
+        var cancel = Btn(Loc.T("common.cancel"));
         void Accept() { result = boxes.Select(b => b.Text ?? "").ToArray(); w.Close(); }
         okBtn.Click += (_, _) => Accept();
         cancel.Click += (_, _) => w.Close();
@@ -219,15 +252,15 @@ public sealed class DialogService : IDialogService
         return result;
     }
 
-    public async Task<string?> Choose(string title, string label, IReadOnlyList<string> options, string ok = "Aceptar")
+    public async Task<string?> Choose(string title, string label, IReadOnlyList<string> options, string? ok = null)
     {
         var owner = Owner;
         if (owner is null || options.Count == 0) return null;
         var w = Make(title, 420);
         string? result = null;
         var combo = new ComboBox { ItemsSource = options, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
-        var okBtn = Btn(ok, true);
-        var cancel = Btn("Cancelar");
+        var okBtn = Btn(ok ?? Loc.T("common.ok"), true);
+        var cancel = Btn(Loc.T("common.cancel"));
         void Accept() { result = combo.SelectedItem as string; w.Close(); }
         okBtn.Click += (_, _) => Accept();
         cancel.Click += (_, _) => w.Close();
@@ -259,11 +292,11 @@ public sealed class DialogService : IDialogService
     {
         var owner = Owner;
         if (owner is null) return null;
-        var w = Make("Abrir repositorio", 560);
+        var w = Make(Loc.T("dlg.quickOpen.title"), 560);
         w.SizeToContent = SizeToContent.Manual;
         w.Height = 380;
         RepoEntry? result = null;
-        var search = new TextBox { Watermark = "Buscar repositorio..." };
+        var search = new TextBox { Watermark = Loc.T("dlg.quickOpen.search") };
         var list = new ListBox { Background = Palette.Bg, ItemsSource = repos, SelectedIndex = repos.Count > 0 ? 0 : -1 };
         list.ItemTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<RepoEntry>((r, _) =>
             new StackPanel

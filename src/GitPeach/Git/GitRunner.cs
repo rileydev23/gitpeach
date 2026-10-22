@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using GitPeach.Services;
 
 namespace GitPeach.Git;
 
@@ -75,7 +76,7 @@ public sealed class GitRunner : IGitRunner
         }
         catch (Exception ex)
         {
-            return GitResult.Fail($"No se pudo ejecutar git: {ex.Message}");
+            return GitResult.Fail(Loc.F("git.runError", ex.Message));
         }
 
         var stdoutTask = proc.StandardOutput.ReadToEndAsync(ct);

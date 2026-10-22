@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitPeach.ViewModels"
+             xmlns:l="using:GitPeach.Services"
              x:Class="GitPeach.Views.DiffListView"
              x:DataType="vm:DiffPaneViewModel">
   <Panel>
@@ -19,7 +20,7 @@
               <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
                 <Button Content="Stage hunk" Command="{Binding StageCommand}" IsVisible="{Binding CanStage}" Padding="8,1" FontSize="11" />
                 <Button Content="Unstage hunk" Command="{Binding UnstageCommand}" IsVisible="{Binding CanUnstage}" Padding="8,1" FontSize="11" />
-                <Button Content="Descartar" Command="{Binding DiscardCommand}" IsVisible="{Binding CanDiscard}" Padding="8,1" FontSize="11" />
+                <Button Content="{l:L common.discard}" Command="{Binding DiscardCommand}" IsVisible="{Binding CanDiscard}" Padding="8,1" FontSize="11" />
               </StackPanel>
               <TextBlock Text="{Binding Text}" Foreground="{Binding Foreground}" Classes="mono" FontSize="12" VerticalAlignment="Center" />
             </DockPanel>
@@ -31,7 +32,7 @@
       </ListBox.ItemTemplate>
     </ListBox>
     <Button x:Name="PopOutButton" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,22,0"
-            Padding="8,2" FontSize="11" Content="⧉ Ventana" Command="{Binding PopOutCommand}" IsVisible="{Binding CanPopOut}"
-            ToolTip.Tip="Abrir el diff en una ventana aparte" />
+            Padding="8,2" FontSize="11" Content="{l:L diff.popOut}" Command="{Binding PopOutCommand}" IsVisible="{Binding CanPopOut}"
+            ToolTip.Tip="{l:L diff.popOut.tip}" />
   </Panel>
 </UserControl>

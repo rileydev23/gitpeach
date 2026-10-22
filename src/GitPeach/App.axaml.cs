@@ -21,6 +21,8 @@ public partial class App : Application
         {
             var services = ConfigureServices();
             var store = services.GetRequiredService<IAppStateStore>();
+            // Before any view or view model exists: they read their texts once, when built.
+            Loc.Init(store.State.Language);
 #if !DEBUG
             // Debug runs stay anonymous so they never replace the location of the real build.
             PeachApps.Announce("GitPeach");

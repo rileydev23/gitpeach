@@ -30,7 +30,8 @@ public sealed partial class HistoryViewModel : ObservableObject
     public GraphMetrics Metrics { get; } = new();
     public CommitRowVM WipRow { get; }
 
-    public static IReadOnlyList<string> SearchModes { get; } = new[] { "Mensaje", "Autor", "Hash", "Código (-S)" };
+    public static IReadOnlyList<string> SearchModes =>
+        [Loc.T("history.mode.message"), Loc.T("history.mode.author"), "Hash", Loc.T("history.mode.code")];
 
     [ObservableProperty] private CommitRowVM? _selectedCommitRow;
     [ObservableProperty] private string _searchText = "";
@@ -60,7 +61,7 @@ public sealed partial class HistoryViewModel : ObservableObject
     }
 
     public void UpdateWipCount(int count)
-        => WipRow.Subject = count == 0 ? "Working Tree (limpio)" : $"Working Tree ({count} cambio{(count == 1 ? "" : "s")})";
+        => WipRow.Subject = count == 0 ? Loc.T("history.wip.clean") : Loc.F("history.wip", Loc.Plural("common.changes", count));
 
     // ---------- loading ----------
 
@@ -160,7 +161,7 @@ public sealed partial class HistoryViewModel : ObservableObject
     {
         var row = Commits.FirstOrDefault(r => r.Commit?.Hash == hash);
         if (row is not null) SelectedCommitRow = row;
-        else if (!IsSearching) Notify?.Invoke("El commit no está cargado en la lista todavía");
+        else if (!IsSearching) Notify?.Invoke(Loc.T("history.notLoaded"));
     }
 
     /// <summary>Optional status-bar sink (set by the parent).</summary>
@@ -201,17 +202,16 @@ public sealed partial class HistoryViewModel : ObservableObject
     private async Task RunSearchAsync()
     {
         var query = Query;
-        SearchStatus = "Buscando…";
+        SearchStatus = Loc.T("history.searching");
         var list = await _git.Search(query, SearchLimit);
         if (query != Query) return; // a newer search is on its way
         Reset(keepWip: false);
         AppendCommits(list, withGraph: false);
         SearchStatus = list.Count switch
         {
-            0 => "Sin resultados",
-            SearchLimit => $"Primeros {SearchLimit} resultados",
-            1 => "1 resultado",
-            var n => $"{n} resultados",
+            0 => Loc.T("history.noResults"),
+            SearchLimit => Loc.F("history.firstResults", SearchLimit),
+            var n => Loc.Plural("history.results", n),
         };
         if (Commits.Count > 0) SelectedCommitRow = Commits[0];
     }
@@ -229,19 +229,19 @@ public sealed partial class HistoryViewModel : ObservableObject
         if (row.Commit is not { } c) return Array.Empty<MenuAction>();
         return new[]
         {
-            new MenuAction("Copiar hash", () => _clipboard.SetTextAsync(c.Hash)),
-            new MenuAction("Copiar mensaje", () => _clipboard.SetTextAsync(string.IsNullOrEmpty(c.Message) ? c.Subject : c.Message)),
+            new MenuAction(Loc.T("history.menu.copyHash"), () => _clipboard.SetTextAsync(c.Hash)),
+            new MenuAction(Loc.T("history.menu.copyMessage"), () => _clipboard.SetTextAsync(string.IsNullOrEmpty(c.Message) ? c.Subject : c.Message)),
             MenuAction.Separator,
-            new MenuAction("Checkout (HEAD desacoplado)", () => _actions.Checkout(c.Hash)),
-            new MenuAction("Nueva rama aquí…", () => _actions.NewBranch(c.Hash)),
-            new MenuAction("Nuevo tag aquí…", () => _actions.CreateTag(c.Hash)),
+            new MenuAction(Loc.T("history.menu.checkout"), () => _actions.Checkout(c.Hash)),
+            new MenuAction(Loc.T("history.menu.newBranch"), () => _actions.NewBranch(c.Hash)),
+            new MenuAction(Loc.T("history.menu.newTag"), () => _actions.CreateTag(c.Hash)),
             MenuAction.Separator,
             new MenuAction("Cherry-pick", () => _actions.CherryPick(c)),
             new MenuAction("Revert", () => _actions.Revert(c)),
             MenuAction.Separator,
-            new MenuAction("Reset suave (soft) hasta aquí", () => _actions.ResetTo(c, "soft")),
-            new MenuAction("Reset mixto (mixed) hasta aquí", () => _actions.ResetTo(c, "mixed")),
-            new MenuAction("Reset duro (hard) hasta aquí…", () => _actions.ResetTo(c, "hard")),
+            new MenuAction(Loc.T("history.menu.resetSoft"), () => _actions.ResetTo(c, "soft")),
+            new MenuAction(Loc.T("history.menu.resetMixed"), () => _actions.ResetTo(c, "mixed")),
+            new MenuAction(Loc.T("history.menu.resetHard"), () => _actions.ResetTo(c, "hard")),
         };
     }
 }

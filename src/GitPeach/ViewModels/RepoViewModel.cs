@@ -130,7 +130,7 @@ public sealed partial class RepoViewModel : TabViewModel, IRepoSession, IDisposa
     private void ApplyHeader()
     {
         var s = Snapshot.Status;
-        BranchText = s.IsDetached ? $"HEAD desacoplado ({(s.Oid is { Length: > 7 } o ? o[..7] : "?")})" : s.Branch ?? "";
+        BranchText = s.IsDetached ? Loc.F("repo.detached", s.Oid is { Length: > 7 } o ? o[..7] : "?") : s.Branch ?? "";
         var parts = new List<string>();
         if (s.Ahead > 0) parts.Add($"↑{s.Ahead}");
         if (s.Behind > 0) parts.Add($"↓{s.Behind}");
@@ -139,10 +139,10 @@ public sealed partial class RepoViewModel : TabViewModel, IRepoSession, IDisposa
         HasOperation = Snapshot.Operation != RepoOperation.None;
         OperationText = Snapshot.Operation switch
         {
-            RepoOperation.Merge => "Merge en curso",
-            RepoOperation.Rebase => "Rebase en curso",
-            RepoOperation.CherryPick => "Cherry-pick en curso",
-            RepoOperation.Revert => "Revert en curso",
+            RepoOperation.Merge => Loc.T("repo.op.merge"),
+            RepoOperation.Rebase => Loc.T("repo.op.rebase"),
+            RepoOperation.CherryPick => Loc.T("repo.op.cherryPick"),
+            RepoOperation.Revert => Loc.T("repo.op.revert"),
             _ => "",
         };
     }
@@ -160,7 +160,7 @@ public sealed partial class RepoViewModel : TabViewModel, IRepoSession, IDisposa
         {
             var res = await action();
             Notice = res.Ok ? "" : res.Message;
-            if (!res.Ok) await _dialogs.Message("Error de git", res.Message);
+            if (!res.Ok) await _dialogs.Message(Loc.T("repo.gitError"), res.Message);
         }
         finally
         {
@@ -173,7 +173,7 @@ public sealed partial class RepoViewModel : TabViewModel, IRepoSession, IDisposa
     public async Task PerformQuiet(Func<Task<GitResult>> action)
     {
         var res = await action();
-        if (!res.Ok) await _dialogs.Message("Error", res.Message);
+        if (!res.Ok) await _dialogs.Message(Loc.T("common.error"), res.Message);
         await RefreshAllAsync(false);
     }
 
@@ -192,9 +192,9 @@ public sealed partial class RepoViewModel : TabViewModel, IRepoSession, IDisposa
             if (!res.Ok)
             {
                 Notice = res.Message;
-                await _dialogs.Message($"Error en {text}", res.Message);
+                await _dialogs.Message(Loc.F("repo.remote.error", text), res.Message);
             }
-            else Notice = $"{text} completado";
+            else Notice = Loc.F("repo.remote.done", text);
         }
         finally
         {

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GitPeach.Git;
 using GitPeach.Models;
+using GitPeach.Services;
 
 namespace GitPeach.ViewModels;
 
@@ -25,9 +26,9 @@ public sealed partial class WorkingTreeViewModel : ObservableObject
     [ObservableProperty] private int _conflictCount;
 
     public bool HasConflicts => ConflictCount > 0;
-    public string ConflictText => ConflictCount == 1
-        ? "1 archivo en conflicto — doble clic sobre él para resolverlo"
-        : $"{ConflictCount} archivos en conflicto — doble clic sobre cada uno para resolverlos";
+    public string ConflictText => Loc.Plural("repo.conflicts", ConflictCount);
+    public string UnstagedHeader => Loc.F("repo.unstaged", Unstaged.Count);
+    public string StagedHeader => Loc.F("repo.staged", Staged.Count);
 
     /// <summary>The file whose diff should be shown.</summary>
     public FileChange? SelectedChange => (SelectedUnstaged ?? SelectedStaged)?.Change;
@@ -41,6 +42,8 @@ public sealed partial class WorkingTreeViewModel : ObservableObject
         _queries = queries;
         _git = git;
         Files = files;
+        Unstaged.CollectionChanged += (_, _) => OnPropertyChanged(nameof(UnstagedHeader));
+        Staged.CollectionChanged += (_, _) => OnPropertyChanged(nameof(StagedHeader));
     }
 
     partial void OnConflictCountChanged(int value)
@@ -118,12 +121,12 @@ public sealed partial class WorkingTreeViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(CommitMessage))
         {
-            _session.Notify("Escribe un mensaje de commit");
+            _session.Notify(Loc.T("repo.commit.noMessage"));
             CommitMessageFocusRequested?.Invoke();
             return;
         }
-        if (Staged.Count == 0 && !Amend) { _session.Notify("No hay cambios en stage"); return; }
-        if (HasConflicts) { _session.Notify("Resuelve los conflictos antes de hacer commit"); return; }
+        if (Staged.Count == 0 && !Amend) { _session.Notify(Loc.T("repo.commit.nothingStaged")); return; }
+        if (HasConflicts) { _session.Notify(Loc.T("repo.commit.conflicts")); return; }
 
         var msg = CommitMessage;
         var amend = Amend;
@@ -133,7 +136,7 @@ public sealed partial class WorkingTreeViewModel : ObservableObject
         {
             CommitMessage = "";
             Amend = false;
-            _session.Notify("Commit creado");
+            _session.Notify(Loc.T("repo.commit.done"));
         }
     }
 }

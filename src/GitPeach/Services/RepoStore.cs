@@ -35,6 +35,8 @@ public sealed class AppState
     public int? Y { get; set; }
     public bool Maximized { get; set; }
     public string? GitPath { get; set; }
+    /// <summary>Interface language: "en", "es" or null to follow the system.</summary>
+    public string? Language { get; set; }
 }
 
 [JsonSerializable(typeof(AppState))]

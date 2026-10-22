@@ -13,6 +13,7 @@ public static class Palette
     public static readonly IBrush Text = B("#d4d4d4");
     public static readonly IBrush Dim = B("#8a8d93");
     public static readonly IBrush Accent = B("#4a90d9");
+    public static readonly IBrush Amber = B("#e0a24a");
 
     public static readonly IBrush AddedBg = B("#1d3a2a");
     public static readonly IBrush AddedFg = B("#a6e3b4");

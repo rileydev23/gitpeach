@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:GitPeach.ViewModels"
+        xmlns:l="using:GitPeach.Services"
         xmlns:views="using:GitPeach.Views"
         x:Class="GitPeach.Views.DiffWindow"
         x:DataType="vm:DetailsViewModel"
@@ -18,7 +19,7 @@
     </Border>
     <Border DockPanel.Dock="Top" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,0,0,1"
             Padding="12,8" IsVisible="{Binding IsWipMode}">
-      <TextBlock Classes="dim" Text="Working Tree — elige un archivo en la ventana principal; este diff se actualiza solo." />
+      <TextBlock Classes="dim" Text="{l:L diff.wipWindow}" />
     </Border>
     <views:DiffListView x:Name="Diff" DataContext="{Binding Diff}" />
   </DockPanel>

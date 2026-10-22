@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GitPeach.Git;
+using GitPeach.Services;
 
 namespace GitPeach.ViewModels;
 
@@ -12,12 +13,12 @@ public sealed partial class FileHistoryViewModel : ObservableObject, IDisposable
     private CancellationTokenSource? _cts;
 
     public string FilePath { get; }
-    public string Title => $"Historial — {FilePath}";
+    public string Title => Loc.F("fileHistory.title", FilePath);
     public DiffPaneViewModel Diff { get; } = new();
 
     [ObservableProperty] private IReadOnlyList<FileRevisionVM> _revisions = Array.Empty<FileRevisionVM>();
     [ObservableProperty] private FileRevisionVM? _selected;
-    [ObservableProperty] private string _status = "Cargando historial…";
+    [ObservableProperty] private string _status = Loc.T("fileHistory.loading");
     [ObservableProperty] private string _detail = "";
 
     public FileHistoryViewModel(IGitQueries git, string path, FileActions actions)
@@ -34,13 +35,12 @@ public sealed partial class FileHistoryViewModel : ObservableObject, IDisposable
         Revisions = list.Select(r => new FileRevisionVM
         {
             Revision = r,
-            PathNote = r.Path != FilePath ? $"como {r.Path}" : "",
+            PathNote = r.Path != FilePath ? Loc.F("fileHistory.as", r.Path) : "",
         }).ToList();
         Status = Revisions.Count switch
         {
-            0 => "Este archivo no tiene historial en la rama actual.",
-            1 => "1 commit",
-            var n => $"{n} commits",
+            0 => Loc.T("fileHistory.none"),
+            var n => Loc.Plural("common.commits", n),
         };
         Selected = Revisions.FirstOrDefault();
     }
@@ -60,7 +60,7 @@ public sealed partial class FileHistoryViewModel : ObservableObject, IDisposable
             var files = await _git.FileDiffAt(c.Hash, rev.Revision.Path, cts.Token);
             if (cts.IsCancellationRequested) return;
             Diff.Rows = files.Count == 0
-                ? new[] { DiffRowBuilder.Note("Sin cambios de contenido en este commit") }
+                ? new[] { DiffRowBuilder.Note(Loc.T("fileHistory.noContent")) }
                 : await Task.Run(() => DiffRowBuilder.Build(files), cts.Token);
         }
         catch (OperationCanceledException) { }

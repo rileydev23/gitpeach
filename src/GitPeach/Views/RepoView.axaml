@@ -3,6 +3,7 @@
              xmlns:vm="using:GitPeach.ViewModels"
              xmlns:c="using:GitPeach.Controls"
              xmlns:views="using:GitPeach.Views"
+             xmlns:l="using:GitPeach.Services"
              x:Class="GitPeach.Views.RepoView"
              x:DataType="vm:RepoViewModel">
   <UserControl.KeyBindings>
@@ -25,38 +26,38 @@
     <Border DockPanel.Dock="Top" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="8,6">
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
-          <Button Content="TextPeach" Command="{Binding OpenInTextPeachCommand}" ToolTip.Tip="Revisar el código del repositorio en TextPeach (solo lectura)" />
-          <Button Content="Explorador" Command="{Binding OpenInExplorerCommand}" />
+          <Button Content="TextPeach" Command="{Binding OpenInTextPeachCommand}" ToolTip.Tip="{l:L repo.textpeach.tip}" />
+          <Button Content="{l:L repo.explorer}" Command="{Binding OpenInExplorerCommand}" />
           <Button Content="Terminal" Command="{Binding OpenInTerminalCommand}" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="4">
-          <Button Content="Fetch" Command="{Binding FetchCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Fetch de todos los remotos (Ctrl+Shift+F)" />
+          <Button Content="Fetch" Command="{Binding FetchCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="{l:L repo.fetch.tip}" />
           <SplitButton Content="Pull" Command="{Binding PullCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Pull (Ctrl+Shift+L)">
             <SplitButton.Flyout>
               <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                <MenuItem Header="Pull (según la configuración de git)" Command="{Binding PullCommand}" InputGesture="Ctrl+Shift+L" />
-                <MenuItem Header="Pull con rebase" Command="{Binding PullRebaseCommand}" />
-                <MenuItem Header="Pull solo fast-forward" Command="{Binding PullFastForwardCommand}" />
+                <MenuItem Header="{l:L repo.pull.default}" Command="{Binding PullCommand}" InputGesture="Ctrl+Shift+L" />
+                <MenuItem Header="{l:L repo.pull.rebase}" Command="{Binding PullRebaseCommand}" />
+                <MenuItem Header="{l:L repo.pull.ff}" Command="{Binding PullFastForwardCommand}" />
               </MenuFlyout>
             </SplitButton.Flyout>
           </SplitButton>
-          <SplitButton Content="Push" Command="{Binding PushCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Push de la rama actual (Ctrl+Shift+P)">
+          <SplitButton Content="Push" Command="{Binding PushCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="{l:L repo.push.tip}">
             <SplitButton.Flyout>
               <MenuFlyout Placement="BottomEdgeAlignedLeft">
                 <MenuItem Header="Push" Command="{Binding PushCommand}" InputGesture="Ctrl+Shift+P" />
-                <MenuItem Header="Push a otro remoto…" Command="{Binding PushToRemoteCommand}" />
-                <MenuItem Header="Push de todos los tags…" Command="{Binding PushTagsCommand}" />
+                <MenuItem Header="{l:L repo.push.toRemote}" Command="{Binding PushToRemoteCommand}" />
+                <MenuItem Header="{l:L repo.push.tags}" Command="{Binding PushTagsCommand}" />
                 <Separator />
-                <MenuItem Header="Push forzado (--force-with-lease)…" Command="{Binding PushForceCommand}" />
+                <MenuItem Header="{l:L repo.push.force}" Command="{Binding PushForceCommand}" />
               </MenuFlyout>
             </SplitButton.Flyout>
           </SplitButton>
           <Border Width="1" Background="#3a3c42" Margin="6,2" />
-          <Button Content="Nueva rama" Command="{Binding NewBranchCommand}" ToolTip.Tip="Nueva rama desde HEAD (Ctrl+B)" />
-          <Button Content="Stash" Command="{Binding StashCommand}" ToolTip.Tip="Guardar cambios en un stash (Ctrl+Shift+S)" />
-          <Button Content="Pop" Command="{Binding PopCommand}" ToolTip.Tip="Aplicar y quitar el último stash (Ctrl+Shift+O)" />
+          <Button Content="{l:L repo.newBranch}" Command="{Binding NewBranchCommand}" ToolTip.Tip="{l:L repo.newBranch.tip}" />
+          <Button Content="Stash" Command="{Binding StashCommand}" ToolTip.Tip="{l:L repo.stash.tip}" />
+          <Button Content="Pop" Command="{Binding PopCommand}" ToolTip.Tip="{l:L repo.pop.tip}" />
           <Border Width="1" Background="#3a3c42" Margin="6,2" />
-          <Button Content="Refrescar" Command="{Binding RefreshCommand}" ToolTip.Tip="F5" />
+          <Button Content="{l:L repo.refresh}" Command="{Binding RefreshCommand}" ToolTip.Tip="F5" />
           <TextBlock Text="{Binding BranchText}" FontWeight="SemiBold" Foreground="#6cc070" VerticalAlignment="Center" Margin="14,0,0,0" />
           <TextBlock Text="{Binding TrackText}" Foreground="#e0a24a" VerticalAlignment="Center" Margin="6,0,0,0" />
         </StackPanel>
@@ -67,8 +68,8 @@
     <Border DockPanel.Dock="Top" Background="#5a4318" Padding="10,6" IsVisible="{Binding HasOperation}">
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
-          <Button Content="Continuar" Command="{Binding ContinueOperationCommand}" />
-          <Button Content="Abortar" Command="{Binding AbortOperationCommand}" />
+          <Button Content="{l:L common.continue}" Command="{Binding ContinueOperationCommand}" />
+          <Button Content="{l:L common.abort}" Command="{Binding AbortOperationCommand}" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
           <TextBlock Text="{Binding OperationText}" FontWeight="SemiBold" />
@@ -80,7 +81,7 @@
     <!-- Status bar -->
     <Border DockPanel.Dock="Bottom" Background="#18191c" BorderBrush="#3a3c42" BorderThickness="0,1,0,0" Padding="10,3">
       <DockPanel>
-        <Button DockPanel.Dock="Right" Classes="flat" Content="Log de comandos" Command="{Binding Log.ToggleCommand}" Foreground="#8a8d93" ToolTip.Tip="Ctrl+L" />
+        <Button DockPanel.Dock="Right" Classes="flat" Content="{l:L repo.log}" Command="{Binding Log.ToggleCommand}" Foreground="#8a8d93" ToolTip.Tip="Ctrl+L" />
         <ProgressBar DockPanel.Dock="Right" IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="100" Height="6" Margin="0,0,10,0" />
         <TextBlock Classes="dim" Text="{Binding BusyText}" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
         <TextBlock Classes="dim" Text="{Binding Notice}" IsVisible="{Binding !IsBusy}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -92,8 +93,8 @@
             Height="170" IsVisible="{Binding Log.IsVisible}">
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" VerticalAlignment="Top">
-          <Button Classes="flat" Content="Copiar" Click="OnCopyLog" ToolTip.Tip="Copiar el log al portapapeles" />
-          <Button Classes="flat" Content="Limpiar" Command="{Binding Log.ClearCommand}" />
+          <Button Classes="flat" Content="{l:L common.copy}" Click="OnCopyLog" ToolTip.Tip="{l:L repo.log.copy.tip}" />
+          <Button Classes="flat" Content="{l:L repo.log.clear}" Command="{Binding Log.ClearCommand}" />
         </StackPanel>
         <!-- Read-only output: a TextBlock, so it never shows a caret or an input border. -->
         <ScrollViewer x:Name="LogScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
@@ -132,12 +133,12 @@
           <DockPanel>
             <ComboBox DockPanel.Dock="Left" ItemsSource="{x:Static vm:HistoryViewModel.SearchModes}"
                       SelectedIndex="{Binding History.SearchModeIndex}" Width="118" Margin="0,0,6,0"
-                      ToolTip.Tip="Qué buscar" />
+                      ToolTip.Tip="{l:L repo.search.mode.tip}" />
             <Button DockPanel.Dock="Right" Classes="flat" Content="✕" Command="{Binding History.ClearSearchCommand}"
-                    IsVisible="{Binding History.IsSearching}" ToolTip.Tip="Limpiar búsqueda (Esc)" />
+                    IsVisible="{Binding History.IsSearching}" ToolTip.Tip="{l:L repo.search.clear.tip}" />
             <TextBlock DockPanel.Dock="Right" Classes="dim" Text="{Binding History.SearchStatus}" VerticalAlignment="Center"
                        Margin="8,0" IsVisible="{Binding History.IsSearching}" />
-            <TextBox x:Name="SearchBox" Text="{Binding History.SearchText}" Watermark="Buscar en el historial (Ctrl+F)">
+            <TextBox x:Name="SearchBox" Text="{Binding History.SearchText}" Watermark="{l:L repo.search.watermark}">
               <TextBox.KeyBindings>
                 <KeyBinding Gesture="Escape" Command="{Binding History.ClearSearchCommand}" />
               </TextBox.KeyBindings>
@@ -179,8 +180,8 @@
           <!-- Working tree mode -->
           <Grid RowDefinitions="Auto,*,Auto,*,Auto" IsVisible="{Binding Details.IsWipMode}">
             <DockPanel Margin="8,6">
-              <Button DockPanel.Dock="Right" Classes="flat" Content="Stage todo" Command="{Binding WorkingTree.StageAllCommand}" ToolTip.Tip="Ctrl+Shift+A" />
-              <TextBlock Text="{Binding WorkingTree.Unstaged.Count, StringFormat='Cambios sin stage ({0})'}" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <Button DockPanel.Dock="Right" Classes="flat" Content="{l:L repo.stageAll}" Command="{Binding WorkingTree.StageAllCommand}" ToolTip.Tip="Ctrl+Shift+A" />
+              <TextBlock Text="{Binding WorkingTree.UnstagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
             </DockPanel>
             <ListBox x:Name="UnstagedList" Grid.Row="1" ItemsSource="{Binding WorkingTree.Unstaged}" SelectedItem="{Binding WorkingTree.SelectedUnstaged}">
               <ListBox.ItemTemplate>
@@ -190,10 +191,10 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" ClipToBounds="True">
                       <TextBlock Text="{Binding Directory}" Classes="dim" />
                       <TextBlock Text="{Binding FileName}" />
-                      <TextBlock Text="  conflicto" Foreground="#e0a24a" FontSize="11" VerticalAlignment="Center" IsVisible="{Binding IsConflict}" />
+                      <TextBlock Text="{l:L repo.conflict.badge}" Foreground="#e0a24a" FontSize="11" VerticalAlignment="Center" IsVisible="{Binding IsConflict}" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
-                      <Button Classes="flat" Content="↶" Command="{Binding DiscardCommand}" ToolTip.Tip="Descartar" IsVisible="{Binding !IsConflict}" />
+                      <Button Classes="flat" Content="↶" Command="{Binding DiscardCommand}" ToolTip.Tip="{l:L common.discard}" IsVisible="{Binding !IsConflict}" />
                       <Button Classes="flat" Content="{Binding PrimaryText}" Command="{Binding PrimaryCommand}" ToolTip.Tip="Stage" FontWeight="Bold" />
                     </StackPanel>
                   </Grid>
@@ -201,8 +202,8 @@
               </ListBox.ItemTemplate>
             </ListBox>
             <DockPanel Grid.Row="2" Margin="8,6">
-              <Button DockPanel.Dock="Right" Classes="flat" Content="Unstage todo" Command="{Binding WorkingTree.UnstageAllCommand}" ToolTip.Tip="Ctrl+Shift+U" />
-              <TextBlock Text="{Binding WorkingTree.Staged.Count, StringFormat='Cambios en stage ({0})'}" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <Button DockPanel.Dock="Right" Classes="flat" Content="{l:L repo.unstageAll}" Command="{Binding WorkingTree.UnstageAllCommand}" ToolTip.Tip="Ctrl+Shift+U" />
+              <TextBlock Text="{Binding WorkingTree.StagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
             </DockPanel>
             <ListBox x:Name="StagedList" Grid.Row="3" ItemsSource="{Binding WorkingTree.Staged}" SelectedItem="{Binding WorkingTree.SelectedStaged}">
               <ListBox.ItemTemplate>
@@ -221,10 +222,10 @@
             <Border Grid.Row="4" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,1,0,0" Padding="8">
               <StackPanel Spacing="6">
                 <TextBox x:Name="MessageBox" Text="{Binding WorkingTree.CommitMessage}" AcceptsReturn="True" TextWrapping="Wrap"
-                         Height="70" Watermark="Mensaje de commit (Ctrl+Enter para confirmar)" />
+                         Height="70" Watermark="{l:L repo.commit.watermark}" />
                 <DockPanel>
                   <Button DockPanel.Dock="Right" Classes="accent" Content="Commit" Command="{Binding WorkingTree.CommitChangesCommand}" Padding="18,5" ToolTip.Tip="Ctrl+Enter" />
-                  <CheckBox Content="Amend (modificar último commit)" IsChecked="{Binding WorkingTree.Amend}" />
+                  <CheckBox Content="{l:L repo.commit.amend}" IsChecked="{Binding WorkingTree.Amend}" />
                 </DockPanel>
               </StackPanel>
             </Border>
