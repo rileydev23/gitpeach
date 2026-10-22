@@ -1,7 +1,7 @@
-; Windows installer: GitPeach-Setup.exe (Inno Setup 6). Per user, no administrator: installs the same portable exe
+; Windows installer: gitpeach-windows-x64-setup.exe (Inno Setup 6). Per user, no administrator: installs the same portable exe
 ; into %LOCALAPPDATA%\Programs\GitPeach, adds it to the Start menu (so Windows search finds it) and to
 ; Settings > Apps with its uninstaller. Settings in %APPDATA%\peachapps\GitPeach are kept on uninstall.
-; Build after build.cmd:  iscc /DAppVersion=1.2.3 installer\GitPeach.iss   ->  dist\GitPeach-Setup.exe
+; Build after build.cmd:  iscc /DAppVersion=1.2.3 installer\GitPeach.iss   ->  dist\gitpeach-windows-x64-setup.exe
 ; The app updates itself by running a newer setup with /SILENT; installed.txt tells it that it was installed.
 
 #ifndef AppVersion
@@ -24,7 +24,7 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\dist
-OutputBaseFilename=GitPeach-Setup
+OutputBaseFilename=gitpeach-windows-x64-setup
 SetupIconFile=..\src\GitPeach\Assets\app.ico
 UninstallDisplayIcon={app}\GitPeach.exe
 UninstallDisplayName=GitPeach

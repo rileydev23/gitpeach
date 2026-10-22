@@ -92,11 +92,11 @@ Es un único ejecutable portable (o con instalador, si lo prefieres), sin cuenta
 Descarga lo que prefieras desde la sección *Releases* del repositorio (o compílalo, ver
 [Compilar desde el código](#compilar-desde-el-código)):
 
-- **Windows, con instalador:** `GitPeach-Setup.exe`. Se instala solo para tu usuario (no pide administrador)
+- **Windows, con instalador:** `gitpeach-windows-x64-setup.exe`. Se instala solo para tu usuario (no pide administrador)
   en `%LOCALAPPDATA%\Programs\GitPeach`, aparece al buscar en el menú Inicio y se desinstala desde
   **Configuración > Aplicaciones**.
-- **Windows, portable:** `GitPeach.exe`. Ponlo en la carpeta que quieras y ejecútalo.
-- **Linux:** `GitPeach-linux-x64.tar.gz`. Descomprímelo con `tar -xzf GitPeach-linux-x64.tar.gz` y
+- **Windows, portable:** `gitpeach-windows-x64-portable.exe`. Ponlo en la carpeta que quieras y ejecútalo.
+- **Linux:** `gitpeach-linux-x64.tar.gz`. Descomprímelo con `tar -xzf gitpeach-linux-x64.tar.gz` y
   ejecuta `./GitPeach`, o `./install.sh` para instalarlo en tu usuario (sin root): queda en
   `~/.local/opt/gitpeach`, con el comando `gitpeach` y una entrada en el menú de aplicaciones. Para quitarlo,
   `~/.local/opt/gitpeach/uninstall.sh`.
@@ -222,7 +222,7 @@ docs/tal ─────PR───┘
    parche (0.3.2 → 0.3.3).
 3. **Un merge no es un release.** Se pueden juntar varios *pull requests* en el borrador y publicarlo cuando
    haya algo que valga la pena entregar. Publicarlo crea el tag `vX.Y.Z` y un workflow automáticamente corre
-   los tests, compila `GitPeach.exe` y `GitPeach-linux-x64.tar.gz` con esa versión, comprueba que los dos
+   los tests, compila `gitpeach-windows-x64-portable.exe`, `gitpeach-windows-x64-setup.exe` y `gitpeach-linux-x64.tar.gz` con esa versión, comprueba que los dos
    arrancan y los adjunta al release.
 4. Mientras sea 0.x, los cambios incompatibles también suben solo la versión menor. Para sacar la **1.0.0**,
    el mantenedor cambia la versión del borrador a mano justo antes de publicarlo.
