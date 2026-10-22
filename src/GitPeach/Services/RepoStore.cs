@@ -37,6 +37,13 @@ public sealed class AppState
     public string? GitPath { get; set; }
     /// <summary>Interface language: "en", "es" or null to follow the system.</summary>
     public string? Language { get; set; }
+    /// <summary>Look for a new version on GitHub at most once a day.</summary>
+    public bool CheckUpdates { get; set; } = true;
+    public DateTimeOffset? LastUpdateCheck { get; set; }
+    /// <summary>Newest version seen by the last check ("1.2.3"), so the button shows without asking GitHub again.</summary>
+    public string? LatestVersion { get; set; }
+    /// <summary>Version the user chose to skip: no button until a newer one comes out.</summary>
+    public string? SkippedVersion { get; set; }
 }
 
 [JsonSerializable(typeof(AppState))]

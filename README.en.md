@@ -51,7 +51,7 @@ moving between branches, fetching and pushing.
 - **Several repositories at once,** in tabs, organized in groups and favorites.
 - **It refreshes on its own** when the repository changes on disk, even when another tool changes it.
 
-It is a single portable executable, with no installer, no accounts and no telemetry. In English and Spanish:
+It is a single portable executable (or an installer, if you prefer), with no accounts and no telemetry. In English and Spanish:
 it follows the system language and can be switched in **About** (F1).
 
 ## Screenshots
@@ -90,12 +90,27 @@ it follows the system language and can be switched in **About** (F1).
 
 ## Installation
 
-1. Download `GitPeach.exe` (Windows) or `GitPeach-linux-x64.tar.gz` (Linux) from the repository's *Releases*
-   (or build it, see [Building from source](#building-from-source)). On Linux, unpack it with
-   `tar -xzf GitPeach-linux-x64.tar.gz`.
-2. Put it in any folder and run it. There is no installer.
-3. *(Optional)* **Portable mode:** create an empty `portable.txt` file next to the executable and the data is
-   kept in `data/` beside it instead of in your profile.
+Download whichever you prefer from the repository's *Releases* (or build it, see
+[Building from source](#building-from-source)):
+
+- **Windows, installer:** `GitPeach-Setup.exe`. It installs for your user only (no administrator) into
+  `%LOCALAPPDATA%\Programs\GitPeach`, shows up in Start menu search and is uninstalled from
+  **Settings > Apps**.
+- **Windows, portable:** `GitPeach.exe`. Put it in any folder and run it.
+- **Linux:** `GitPeach-linux-x64.tar.gz`. Unpack it with `tar -xzf GitPeach-linux-x64.tar.gz` and run
+  `./GitPeach`, or `./install.sh` to install it for your user (no root): it goes to `~/.local/opt/gitpeach`,
+  with a `gitpeach` command and an entry in the app menu. To remove it, `~/.local/opt/gitpeach/uninstall.sh`.
+
+*(Optional)* **Portable mode:** create an empty `portable.txt` file next to the executable and the data is kept
+in `data/` beside it instead of in your profile. Uninstalling never deletes your data.
+
+### Updates
+
+Once a day, when it opens, GitPeach asks GitHub whether there is a new version. If there is, a **↑ 1.2.0**
+button appears next to **?**; nothing else changes. Clicking it shows what is new and lets you choose
+**Update and restart**, **Not now** or **Skip this version**. Updating checks the download against its SHA-256,
+restarts GitPeach and reopens your tabs. If you used the installer, it updates by running the new installer
+silently. In **About** (F1) you can turn the automatic check off or check right away.
 
 ## Keyboard shortcuts
 
@@ -135,6 +150,8 @@ GitPeach.exe [repository] ...
 
 - GitPeach has **no telemetry and no accounts**. It only goes online through git, when you fetch, pull, push or
   clone, and only to your remotes.
+  It also asks GitHub's public API for the latest GitPeach release, at most once a day (can be turned off in
+  **About**), and downloads it only if you ask. It sends nothing about you.
 - It keeps its state in `peachapps/GitPeach/state.json` inside your user's data folder (`%APPDATA%` on Windows,
   `~/.config` on Linux), or in `data/` next to the executable with `portable.txt`: the list of repositories and
   groups, open tabs and the window size. The exact path is shown in **About** (F1).

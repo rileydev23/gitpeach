@@ -58,8 +58,11 @@
     con la aplicación predeterminada" y la app hermana **TextPeach** para leer código.
 11. **Lo que solo se lee nunca parece editable.** Mensajes, el log, atajos y diffs se muestran con
     `TextBlock`/`SelectableTextBlock`; `TextBox` es solo para escribir (mensaje de commit, búsqueda).
-12. **Portable y autocontenido.** Un único `.exe` sin instalador; con `portable.txt` al lado, los datos se
-    guardan junto al exe.
+12. **Portable y autocontenido.** Un único `.exe` que funciona sin instalar; con `portable.txt` al lado, los
+    datos se guardan junto al exe. El instalador (`GitPeach-Setup.exe`, `install.sh`) es opcional: copia ese mismo
+    exe a una carpeta del usuario, lo registra en el buscador del sistema y deja `installed.txt` al lado.
+13. **Actualizar no interrumpe.** Una versión nueva solo se nota como un botón **↑ x.y.z** junto al **?**; nada
+    se descarga sin confirmar en su popup (Actualizar y reiniciar / Ahora no / Omitir esta versión).
 
 ---
 
@@ -344,7 +347,9 @@ borrar rama sin fusionar, *force push*, abortar).
   está, el diálogo común explica qué es y ofrece **Ir al repositorio**.
 - Instancia única: TextPeach o RestPeach abriendo un repositorio (clic en su rama) lo entregan a la ventana de
   GitPeach ya abierta.
-- `%APPDATA%\peachapps\GitPeach\` guarda `state.json` y `location.json`.
+- `%APPDATA%\peachapps\GitPeach\` guarda `state.json` y `location.json`. `state.json` también guarda la
+  búsqueda de versiones (`CheckUpdates`, `LastUpdateCheck`, `LatestVersion`, `SkippedVersion`): como mucho una
+  consulta a GitHub al día.
 
 ---
 

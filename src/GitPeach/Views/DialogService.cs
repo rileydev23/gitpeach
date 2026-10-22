@@ -109,7 +109,8 @@ public sealed class DialogService : IDialogService
     }
 
     public async Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups,
-        Action openDataFolder, string? savedLanguage, Action<string> chooseLanguage)
+        Action openDataFolder, string? savedLanguage, Action<string> chooseLanguage,
+        bool checkUpdates, Action<bool> setCheckUpdates, Func<Task> checkNow)
     {
         var owner = Owner;
         if (owner is null) return;
@@ -175,12 +176,74 @@ public sealed class DialogService : IDialogService
                 },
                 new Border { Height = 1, Background = Palette.Border },
                 LanguagePicker(savedLanguage, chooseLanguage),
+                UpdatesRow(checkUpdates, setCheckUpdates, () => { w.Close(); _ = checkNow(); }),
                 new TextBlock { Text = Loc.F("dlg.about.dataPath", dataFolder), Foreground = Palette.Dim, FontSize = 11, TextWrapping = TextWrapping.Wrap },
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { openData, close } },
             },
         };
         w.KeyDown += (_, e) => { if (e.Key is Key.Escape or Key.Enter) w.Close(); };
         await w.ShowDialog(owner);
+    }
+
+    /// <summary>"[x] Check for updates once a day   [Check now]".</summary>
+    private static Control UpdatesRow(bool enabled, Action<bool> set, Action checkNow)
+    {
+        var auto = new CheckBox { Content = Loc.T("update.auto"), IsChecked = enabled, Foreground = Palette.Text, VerticalAlignment = VerticalAlignment.Center };
+        auto.IsCheckedChanged += (_, _) => set(auto.IsChecked == true);
+        var now = Btn(Loc.T("update.checkNow"));
+        now.Click += (_, _) => checkNow();
+        var row = new DockPanel();
+        DockPanel.SetDock(now, Dock.Right);
+        row.Children.Add(now);
+        row.Children.Add(auto);
+        return row;
+    }
+
+    public async Task<UpdateChoice> Update(UpdateInfo update, Version current)
+    {
+        var owner = Owner;
+        if (owner is null) return UpdateChoice.Later;
+        var w = Make(Loc.F("update.title", update.Version.ToString(3)), 520);
+        var result = UpdateChoice.Later;
+        var install = Btn(Loc.T("update.install"), true);
+        var later = Btn(Loc.T("update.later"));
+        var skip = Btn(Loc.T("update.skip"));
+        install.Click += (_, _) => { result = UpdateChoice.Install; w.Close(); };
+        later.Click += (_, _) => w.Close();
+        skip.Click += (_, _) => { result = UpdateChoice.Skip; w.Close(); };
+        var page = new Button { Content = Loc.T("update.page"), Foreground = Palette.Accent, VerticalAlignment = VerticalAlignment.Center };
+        page.Classes.Add("flat");
+        page.Click += (_, _) => Updater.OpenInBrowser(update.PageUrl);
+
+        var notes = Updater.ReleaseNotesText(update.Notes);
+        var buttons = new DockPanel();
+        DockPanel.SetDock(page, Dock.Left);
+        buttons.Children.Add(page);
+        buttons.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right,
+            Children = { install, later, skip } });
+        w.Content = new StackPanel
+        {
+            Margin = new Thickness(18), Spacing = 14,
+            Children =
+            {
+                new TextBlock { Text = Loc.F("update.text", current.ToString(3), update.Version.ToString(3)), TextWrapping = TextWrapping.Wrap, Foreground = Palette.Text },
+                new Border
+                {
+                    IsVisible = notes.Length > 0, Background = Palette.Panel2, CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 10),
+                    Child = new ScrollViewer
+                    {
+                        MaxHeight = 260,
+                        HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+                        Content = new TextBlock { Text = notes, TextWrapping = TextWrapping.Wrap, Foreground = Palette.Text, FontSize = 12 },
+                    },
+                },
+                new TextBlock { Text = Loc.T("update.restartNote"), Foreground = Palette.Dim, FontSize = 11, TextWrapping = TextWrapping.Wrap },
+                buttons,
+            },
+        };
+        w.KeyDown += (_, e) => { if (e.Key == Key.Escape) w.Close(); };
+        await w.ShowDialog(owner);
+        return result;
     }
 
     /// <summary>

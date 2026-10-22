@@ -51,7 +51,7 @@ hacer commits, moverse entre ramas, traer y enviar.
 - **Varios repositorios a la vez,** en pestañas, organizados en grupos y favoritos.
 - **Se actualiza solo** cuando el repositorio cambia en el disco, también si lo cambia otra herramienta.
 
-Es un único ejecutable portable, sin instalador, sin cuentas y sin telemetría. En español y en inglés: el idioma sigue al del sistema y se cambia en **Acerca de** (F1).
+Es un único ejecutable portable (o con instalador, si lo prefieres), sin cuentas y sin telemetría. En español y en inglés: el idioma sigue al del sistema y se cambia en **Acerca de** (F1).
 
 ## Capturas
 
@@ -89,12 +89,28 @@ Es un único ejecutable portable, sin instalador, sin cuentas y sin telemetría.
 
 ## Instalación
 
-1. Descarga `GitPeach.exe` (Windows) o `GitPeach-linux-x64.tar.gz` (Linux) desde la sección *Releases* del
-   repositorio (o compílalo, ver [Compilar desde el código](#compilar-desde-el-código)). En Linux,
-   descomprímelo con `tar -xzf GitPeach-linux-x64.tar.gz`.
-2. Ponlo en la carpeta que quieras y ejecútalo. No hay instalador.
-3. *(Opcional)* **Modo portable:** crea un archivo vacío `portable.txt` junto al ejecutable y los datos se
-   guardarán en `data/` a su lado en lugar de en tu perfil.
+Descarga lo que prefieras desde la sección *Releases* del repositorio (o compílalo, ver
+[Compilar desde el código](#compilar-desde-el-código)):
+
+- **Windows, con instalador:** `GitPeach-Setup.exe`. Se instala solo para tu usuario (no pide administrador)
+  en `%LOCALAPPDATA%\Programs\GitPeach`, aparece al buscar en el menú Inicio y se desinstala desde
+  **Configuración > Aplicaciones**.
+- **Windows, portable:** `GitPeach.exe`. Ponlo en la carpeta que quieras y ejecútalo.
+- **Linux:** `GitPeach-linux-x64.tar.gz`. Descomprímelo con `tar -xzf GitPeach-linux-x64.tar.gz` y
+  ejecuta `./GitPeach`, o `./install.sh` para instalarlo en tu usuario (sin root): queda en
+  `~/.local/opt/gitpeach`, con el comando `gitpeach` y una entrada en el menú de aplicaciones. Para quitarlo,
+  `~/.local/opt/gitpeach/uninstall.sh`.
+
+*(Opcional)* **Modo portable:** crea un archivo vacío `portable.txt` junto al ejecutable y los datos se guardarán
+en `data/` a su lado en lugar de en tu perfil. Desinstalar nunca borra tus datos.
+
+### Actualizaciones
+
+Una vez al día, al abrirse, GitPeach mira en GitHub si hay una versión nueva. Si la hay, aparece un botón
+**↑ 1.2.0** junto al **?**; nada más cambia. Al pulsarlo ves las novedades y eliges **Actualizar y reiniciar**,
+**Ahora no** u **Omitir esta versión**. Al actualizar, la descarga se verifica con su SHA-256, GitPeach se
+reinicia y vuelve a abrir tus pestañas. Si lo instalaste con el instalador, se actualiza ejecutando el nuevo
+instalador en silencio. En **Acerca de** (F1) puedes desactivar la búsqueda automática o buscar en el momento.
 
 ## Atajos de teclado
 
@@ -135,6 +151,8 @@ GitPeach.exe [repositorio] ...
 
 - GitPeach **no tiene telemetría ni cuentas**. Solo se conecta a internet a través de git, cuando haces fetch,
   pull, push o clonas, y solo con tus remotos.
+  Además pregunta a la API pública de GitHub por el último release de GitPeach, como mucho una vez al día
+  (desactivable en **Acerca de**), y lo descarga solo si tú lo pides. No envía nada tuyo.
 - Guarda su estado en `peachapps/GitPeach/state.json` dentro de la carpeta de datos de tu usuario
   (`%APPDATA%` en Windows, `~/.config` en Linux), o en `data/` junto al ejecutable con `portable.txt`: lista de
   repositorios y grupos, pestañas abiertas, tamaño de la ventana e idioma. La ruta exacta aparece en **Acerca de** (F1).
