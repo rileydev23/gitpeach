@@ -1,5 +1,10 @@
 # Arquitectura de GitPeach
 
+<!-- peach-hijo: ARQUITECTURA v1.0 -->
+Cliente de git de escritorio (el diseño está en [DISENO.md](DISENO.md)). Los servicios *comunes*
+(`PeachApps`, `SingleInstance`, `TextPeachLocator`, `RepoGrouping`) siguen el mismo modelo que en TextPeach y
+RestPeach; si los cambias, avísalo en el *pull request*.
+
 **Patrón:** MVVM (CommunityToolkit.Mvvm) + inyección de dependencias (Microsoft.Extensions.DependencyInjection).
 Las vistas solo renderizan y enlazan; los view models no conocen Avalonia, `Process` ni el portapapeles,
 sino interfaces de servicios. Todo se arma en un único *composition root*: `App.ConfigureServices()`.
