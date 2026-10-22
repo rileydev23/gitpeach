@@ -99,22 +99,22 @@ jobs:
       - name: Package it with its installer
         run: |
           cp installer/linux/install.sh installer/linux/uninstall.sh installer/installed.txt dist/
-          cp src/GitPeach/Assets/logo.png dist/textpeach.png
+          cp src/GitPeach/Assets/logo.png dist/gitpeach.png
           chmod +x dist/install.sh dist/uninstall.sh
-          tar -czf GitPeach-linux-x64.tar.gz -C dist GitPeach install.sh uninstall.sh installed.txt textpeach.png
+          tar -czf GitPeach-linux-x64.tar.gz -C dist GitPeach install.sh uninstall.sh installed.txt gitpeach.png
       - name: Check that install.sh and uninstall.sh work
         run: |
-          mkdir -p /tmp/tp && tar -xzf GitPeach-linux-x64.tar.gz -C /tmp/tp
-          /tmp/tp/install.sh
-          test -x ~/.local/opt/textpeach/GitPeach
-          test -f ~/.local/opt/textpeach/installed.txt
-          test -f ~/.local/share/applications/textpeach.desktop
-          test -f ~/.local/share/icons/hicolor/256x256/apps/textpeach.png
-          test -L ~/.local/bin/textpeach
-          if command -v desktop-file-validate >/dev/null; then desktop-file-validate ~/.local/share/applications/textpeach.desktop; fi
-          ~/.local/opt/textpeach/uninstall.sh
-          test ! -e ~/.local/opt/textpeach
-          test ! -e ~/.local/share/applications/textpeach.desktop
+          mkdir -p /tmp/gp && tar -xzf GitPeach-linux-x64.tar.gz -C /tmp/gp
+          /tmp/gp/install.sh
+          test -x ~/.local/opt/gitpeach/GitPeach
+          test -f ~/.local/opt/gitpeach/installed.txt
+          test -f ~/.local/share/applications/gitpeach.desktop
+          test -f ~/.local/share/icons/hicolor/256x256/apps/gitpeach.png
+          test -L ~/.local/bin/gitpeach
+          if command -v desktop-file-validate >/dev/null; then desktop-file-validate ~/.local/share/applications/gitpeach.desktop; fi
+          ~/.local/opt/gitpeach/uninstall.sh
+          test ! -e ~/.local/opt/gitpeach
+          test ! -e ~/.local/share/applications/gitpeach.desktop
       - name: Attach it to the release
         env:
           GH_TOKEN: ${{ github.token }}
