@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/img/repo.png" alt="A repository open in GitPeach: branches, history with a graph, local changes and a file's diff" />
+  <img src="docs/img/en/repo.png" alt="A repository open in GitPeach: branches, history with a graph and local changes" />
 </p>
 
 ---
@@ -51,17 +51,17 @@ moving between branches, fetching and pushing.
 - **Several repositories at once,** in tabs, organized in groups and favorites.
 - **It refreshes on its own** when the repository changes on disk, even when another tool changes it.
 
-It is a single portable executable, with no installer, no accounts and no telemetry. The interface is in
-Spanish.
+It is a single portable executable, with no installer, no accounts and no telemetry. In English and Spanish:
+it follows the system language and can be switched in **About** (F1).
 
 ## Screenshots
 
 | | |
 |---|---|
-| ![Repository list with groups, favorites and each one's branch](docs/img/home.png) | ![A commit's details and its diff](docs/img/commit.png) |
+| ![Repository list with groups, favorites and each one's branch](docs/img/en/home.png) | ![A commit's details and its diff](docs/img/en/commit.png) |
 | **Repositories:** groups, favorites and the current branch of each one. | **Commits:** author, date, parents, files and the diff of each one. |
-| ![Conflict tool with my version and the incoming one](docs/img/conflict.png) | ![About GitPeach, with the keyboard shortcuts](docs/img/about.png) |
-| **Conflicts:** pick your version, the incoming one, both, or write the result. | **About (F1):** version, keyboard shortcuts and where the settings are kept. |
+| ![Conflict tool with my version and the incoming one](docs/img/en/conflict.png) | ![About GitPeach, with the keyboard shortcuts](docs/img/en/about.png) |
+| **Conflicts:** pick your version, the incoming one, both, or write the result. | **About (F1):** version, keyboard shortcuts, language and where the settings are kept. |
 
 ## Features
 
@@ -161,7 +161,7 @@ GitPeach/
 ├── docs/
 │   ├── ARQUITECTURA.md      layers, MVVM + DI, conventions (in Spanish)
 │   ├── DISENO.md            design system (colors, type, components, patterns; in Spanish)
-│   └── img/                 screenshots (with sample repositories)
+│   └── img/                 screenshots with sample repositories (English ones in img/en/)
 ├── src/GitPeach/
 │   ├── Git/                 GitRunner (the only place that runs git), GitRepository, pure parsers, graph
 │   ├── Models/              commits, status, refs, diff, blame, options

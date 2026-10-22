@@ -26,23 +26,23 @@ public sealed class RepoActions(IRepoSession session, IGitRepository git, IDialo
 
     public async Task NewBranch(string? startPoint)
     {
-        var n = await dialogs.Prompt("Nueva rama", startPoint is null ? "Nombre de la rama (desde HEAD)" : "Nombre de la rama");
-        if (!string.IsNullOrWhiteSpace(n)) await session.Perform("nueva rama", () => git.CreateBranch(n.Trim(), startPoint, true));
+        var n = await dialogs.Prompt(Loc.T("act.newBranch.title"), Loc.T(startPoint is null ? "act.newBranch.labelHead" : "act.newBranch.label"));
+        if (!string.IsNullOrWhiteSpace(n)) await session.Perform(Loc.T("act.newBranch.busy"), () => git.CreateBranch(n.Trim(), startPoint, true));
     }
 
     public async Task RenameBranch(BranchInfo b)
     {
-        var n = await dialogs.Prompt("Renombrar rama", "Nuevo nombre", b.Name);
-        if (!string.IsNullOrWhiteSpace(n) && n.Trim() != b.Name) await session.Perform("renombrar", () => git.RenameBranch(b.Name, n.Trim()));
+        var n = await dialogs.Prompt(Loc.T("act.renameBranch.title"), Loc.T("act.renameBranch.label"), b.Name);
+        if (!string.IsNullOrWhiteSpace(n) && n.Trim() != b.Name) await session.Perform(Loc.T("act.renameBranch.busy"), () => git.RenameBranch(b.Name, n.Trim()));
     }
 
     public async Task DeleteBranch(BranchInfo b)
     {
-        if (!await dialogs.Confirm("Eliminar rama", $"¿Eliminar la rama '{b.Name}'?", "Eliminar")) return;
-        await session.Perform("eliminar rama", async () =>
+        if (!await dialogs.Confirm(Loc.T("act.deleteBranch.title"), Loc.F("act.deleteBranch.text", b.Name), Loc.T("common.delete"))) return;
+        await session.Perform(Loc.T("act.deleteBranch.busy"), async () =>
         {
             var r = await git.DeleteBranch(b.Name, false);
-            if (!r.Ok && await dialogs.Confirm("La rama no está fusionada", r.Message + "\n\n¿Forzar eliminación?", "Forzar"))
+            if (!r.Ok && await dialogs.Confirm(Loc.T("act.deleteBranch.unmerged"), r.Message + "\n\n" + Loc.T("act.deleteBranch.force"), Loc.T("act.force")))
                 r = await git.DeleteBranch(b.Name, true);
             return r;
         });
@@ -50,8 +50,8 @@ public sealed class RepoActions(IRepoSession session, IGitRepository git, IDialo
 
     public async Task DeleteRemoteBranch(BranchInfo rb)
     {
-        if (await dialogs.Confirm("Eliminar rama remota", $"¿Eliminar '{rb.ShortRemoteName}' de '{rb.Remote}'?", "Eliminar"))
-            await session.Perform("eliminar rama remota", () => git.DeleteRemoteBranch(rb.Remote!, rb.ShortRemoteName));
+        if (await dialogs.Confirm(Loc.T("act.deleteRemoteBranch.title"), Loc.F("act.deleteRemoteBranch.text", rb.ShortRemoteName, rb.Remote), Loc.T("common.delete")))
+            await session.Perform(Loc.T("act.deleteRemoteBranch.busy"), () => git.DeleteRemoteBranch(rb.Remote!, rb.ShortRemoteName));
     }
 
     public Task Merge(string name) => session.Perform($"merge {name}", () => git.Merge(name));
@@ -64,52 +64,52 @@ public sealed class RepoActions(IRepoSession session, IGitRepository git, IDialo
 
     public async Task ResetTo(Commit c, string mode)
     {
-        if (mode == "hard" && !await dialogs.Confirm("Reset hard", $"Se perderán los cambios sin commit y se moverá la rama a {c.ShortHash}. ¿Continuar?", "Reset hard")) return;
+        if (mode == "hard" && !await dialogs.Confirm("Reset hard", Loc.F("act.resetHard.text", c.ShortHash), "Reset hard")) return;
         await session.Perform($"reset --{mode}", () => git.ResetTo(c.Hash, mode));
     }
 
-    public Task Abort() => session.Perform("abortar", () => git.Abort(Snap.Operation));
-    public Task Continue() => session.Perform("continuar", () => git.Continue(Snap.Operation));
+    public Task Abort() => session.Perform(Loc.T("act.abort.busy"), () => git.Abort(Snap.Operation));
+    public Task Continue() => session.Perform(Loc.T("act.continue.busy"), () => git.Continue(Snap.Operation));
 
     // ---------- tags ----------
 
     public async Task CreateTag(string target)
     {
-        var n = await dialogs.Prompt("Nuevo tag", "Nombre del tag");
+        var n = await dialogs.Prompt(Loc.T("act.newTag.title"), Loc.T("act.newTag.label"));
         if (!string.IsNullOrWhiteSpace(n)) await session.Perform("tag", () => git.CreateTag(n.Trim(), target));
     }
 
     public async Task DeleteTag(TagInfo t)
     {
-        if (await dialogs.Confirm("Eliminar tag", $"¿Eliminar el tag local '{t.Name}'?", "Eliminar"))
-            await session.Perform("eliminar tag", () => git.DeleteTag(t.Name));
+        if (await dialogs.Confirm(Loc.T("act.deleteTag.title"), Loc.F("act.deleteTag.text", t.Name), Loc.T("common.delete")))
+            await session.Perform(Loc.T("act.deleteTag.busy"), () => git.DeleteTag(t.Name));
     }
 
     public async Task PushTag(TagInfo t)
     {
-        var remote = await PickRemote("Push del tag");
+        var remote = await PickRemote(Loc.T("act.pushTag.title"));
         if (remote is not null) await session.RunRemote("push tag", p => git.PushTag(remote, t.Name, p));
     }
 
     public async Task DeleteRemoteTag(TagInfo t)
     {
-        var remote = await PickRemote("Eliminar tag remoto");
+        var remote = await PickRemote(Loc.T("act.deleteRemoteTag.title"));
         if (remote is null) return;
-        if (await dialogs.Confirm("Eliminar tag remoto", $"¿Eliminar el tag '{t.Name}' de '{remote}'?", "Eliminar"))
-            await session.RunRemote("eliminar tag remoto", _ => git.DeleteRemoteTag(remote, t.Name));
+        if (await dialogs.Confirm(Loc.T("act.deleteRemoteTag.title"), Loc.F("act.deleteRemoteTag.text", t.Name, remote), Loc.T("common.delete")))
+            await session.RunRemote(Loc.T("act.deleteRemoteTag.busy"), _ => git.DeleteRemoteTag(remote, t.Name));
     }
 
     // ---------- stash ----------
 
     public async Task Stash()
     {
-        var m = await dialogs.Prompt("Stash", "Mensaje (opcional)");
+        var m = await dialogs.Prompt("Stash", Loc.T("act.stash.label"));
         if (m is not null) await session.Perform("stash", () => git.StashPush(m));
     }
 
     public async Task PopLatest()
     {
-        if (Snap.Stashes.Count == 0) { session.Notify("No hay stashes"); return; }
+        if (Snap.Stashes.Count == 0) { session.Notify(Loc.T("act.noStashes")); return; }
         await StashPop(Snap.Stashes[0]);
     }
 
@@ -118,7 +118,7 @@ public sealed class RepoActions(IRepoSession session, IGitRepository git, IDialo
 
     public async Task StashDrop(StashInfo s)
     {
-        if (await dialogs.Confirm("Eliminar stash", $"¿Eliminar {s.Name}?", "Eliminar"))
+        if (await dialogs.Confirm(Loc.T("act.dropStash.title"), Loc.F("act.dropStash.text", s.Name), Loc.T("common.delete")))
             await session.Perform("stash drop", () => git.StashDrop(s.Name));
     }
 
@@ -138,35 +138,33 @@ public sealed class RepoActions(IRepoSession session, IGitRepository git, IDialo
         var status = Snap.Status;
         if (status.IsDetached)
         {
-            await dialogs.Message("Push", "No se puede hacer push con HEAD desacoplado.");
+            await dialogs.Message("Push", Loc.T("act.push.detached"));
             return;
         }
-        if (force && !await dialogs.Confirm("Push forzado",
-                $"Se sobrescribirá '{status.Branch}' en el remoto con tu versión local (--force-with-lease: falla si alguien más subió cambios que no tienes).",
-                "Forzar push"))
+        if (force && !await dialogs.Confirm(Loc.T("act.forcePush.title"), Loc.F("act.forcePush.text", status.Branch), Loc.T("act.forcePush.ok")))
             return;
 
         PushOptions options;
         if (remote is not null || status.Upstream is null)
         {
             remote ??= Snap.Refs.RemoteNames.FirstOrDefault();
-            if (remote is null) { await dialogs.Message("Push", "No hay remotos configurados."); return; }
+            if (remote is null) { await dialogs.Message("Push", Loc.T("act.noRemotes")); return; }
             options = new PushOptions { Remote = remote, Branch = status.Branch, SetUpstream = status.Upstream is null, ForceWithLease = force };
         }
         else options = new PushOptions { ForceWithLease = force };
 
-        await session.RunRemote(force ? "push forzado" : "push", p => git.Push(options, p));
+        await session.RunRemote(force ? Loc.T("act.forcePush.busy") : "push", p => git.Push(options, p));
     }
 
     public async Task PushToRemote()
     {
-        var remote = await PickRemote("Push a remoto");
+        var remote = await PickRemote(Loc.T("act.pushToRemote.title"));
         if (remote is not null) await Push(remote: remote);
     }
 
     public async Task PushTags()
     {
-        var remote = await PickRemote("Push de tags");
+        var remote = await PickRemote(Loc.T("act.pushTags.title"));
         if (remote is not null) await session.RunRemote("push --tags", p => git.Push(new PushOptions { Remote = remote, Tags = true }, p));
     }
 
@@ -176,7 +174,7 @@ public sealed class RepoActions(IRepoSession session, IGitRepository git, IDialo
         var remote = Snap.Refs.RemoteNames.FirstOrDefault();
         if (b.Upstream is null && remote is null)
         {
-            await dialogs.Message("Push", "No hay remotos configurados.");
+            await dialogs.Message("Push", Loc.T("act.noRemotes"));
             return;
         }
         var options = b.Upstream is null
@@ -189,8 +187,8 @@ public sealed class RepoActions(IRepoSession session, IGitRepository git, IDialo
     private async Task<string?> PickRemote(string title)
     {
         var remotes = Snap.Refs.RemoteNames;
-        if (remotes.Count == 0) { await dialogs.Message(title, "No hay remotos configurados."); return null; }
+        if (remotes.Count == 0) { await dialogs.Message(title, Loc.T("act.noRemotes")); return null; }
         if (remotes.Count == 1) return remotes[0];
-        return await dialogs.Choose(title, "Remoto", remotes);
+        return await dialogs.Choose(title, Loc.T("act.remote"), remotes);
     }
 }

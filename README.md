@@ -51,7 +51,7 @@ hacer commits, moverse entre ramas, traer y enviar.
 - **Varios repositorios a la vez,** en pestañas, organizados en grupos y favoritos.
 - **Se actualiza solo** cuando el repositorio cambia en el disco, también si lo cambia otra herramienta.
 
-Es un único ejecutable portable, sin instalador, sin cuentas y sin telemetría. La interfaz está en español.
+Es un único ejecutable portable, sin instalador, sin cuentas y sin telemetría. En español y en inglés: el idioma sigue al del sistema y se cambia en **Acerca de** (F1).
 
 ## Capturas
 
@@ -60,7 +60,7 @@ Es un único ejecutable portable, sin instalador, sin cuentas y sin telemetría.
 | ![Lista de repositorios con grupos, favoritos y la rama de cada uno](docs/img/home.png) | ![Detalle de un commit con su diff](docs/img/commit.png) |
 | **Repositorios:** grupos, favoritos y la rama actual de cada uno. | **Commits:** autor, fecha, padres, archivos y el diff de cada uno. |
 | ![Herramienta de conflictos con la versión propia y la entrante](docs/img/conflict.png) | ![Acerca de GitPeach, con los atajos de teclado](docs/img/about.png) |
-| **Conflictos:** elige tu versión, la entrante, ambas o escribe el resultado. | **Acerca de (F1):** versión, atajos de teclado y dónde se guarda la configuración. |
+| **Conflictos:** elige tu versión, la entrante, ambas o escribe el resultado. | **Acerca de (F1):** versión, atajos de teclado, idioma y dónde se guarda la configuración. |
 
 ## Características
 
@@ -137,7 +137,7 @@ GitPeach.exe [repositorio] ...
   pull, push o clonas, y solo con tus remotos.
 - Guarda su estado en `peachapps/GitPeach/state.json` dentro de la carpeta de datos de tu usuario
   (`%APPDATA%` en Windows, `~/.config` en Linux), o en `data/` junto al ejecutable con `portable.txt`: lista de
-  repositorios y grupos, pestañas abiertas y tamaño de la ventana. La ruta exacta aparece en **Acerca de** (F1).
+  repositorios y grupos, pestañas abiertas, tamaño de la ventana e idioma. La ruta exacta aparece en **Acerca de** (F1).
 
 ## Compilar desde el código
 
@@ -161,7 +161,7 @@ GitPeach/
 ├── docs/
 │   ├── ARQUITECTURA.md      capas, MVVM + DI, convenciones
 │   ├── DISENO.md            sistema de diseño (colores, tipografía, componentes, patrones)
-│   └── img/                 capturas (con repositorios de ejemplo)
+│   └── img/                 capturas con repositorios de ejemplo (en inglés en img/en/)
 ├── src/GitPeach/
 │   ├── Git/                 GitRunner (único lugar que ejecuta git), GitRepository, parsers puros, grafo
 │   ├── Models/              commits, status, refs, diff, blame, opciones

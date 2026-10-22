@@ -20,7 +20,7 @@ public sealed class WindowService : IWindowService
     public void Show(object viewModel)
     {
         if (!_views.TryGetValue(viewModel.GetType(), out var create))
-            throw new InvalidOperationException($"No hay ventana registrada para {viewModel.GetType().Name}");
+            throw new InvalidOperationException($"No window registered for {viewModel.GetType().Name}");
         var w = create();
         w.DataContext = viewModel;
         if (viewModel is IDisposable d) w.Closed += (_, _) => d.Dispose();

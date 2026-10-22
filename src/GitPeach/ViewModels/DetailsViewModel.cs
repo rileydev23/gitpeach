@@ -131,10 +131,11 @@ public sealed partial class DetailsViewModel : ObservableObject
     {
         DetailMessage = string.IsNullOrWhiteSpace(c.Message) ? c.Subject : c.Message;
         var sb = new StringBuilder();
+        // Labels padded to the same width (Loc keys), so the values line up in the monospace block.
         sb.AppendLine($"Commit  {c.Hash}");
-        if (c.Parents.Length > 0) sb.AppendLine($"Padres  {string.Join(' ', c.Parents.Select(p => p[..Math.Min(8, p.Length)]))}");
-        sb.AppendLine($"Autor   {c.Author} <{c.Email}>");
-        sb.Append($"Fecha   {c.Date:yyyy-MM-dd HH:mm:ss}");
+        if (c.Parents.Length > 0) sb.AppendLine(Loc.F("details.parents", string.Join(' ', c.Parents.Select(p => p[..Math.Min(8, p.Length)]))));
+        sb.AppendLine(Loc.F("details.author", $"{c.Author} <{c.Email}>"));
+        sb.Append(Loc.F("details.date", c.Date.ToString("yyyy-MM-dd HH:mm:ss")));
         if (c.Committer.Length > 0 && c.Committer != c.Author)
             sb.Append($"\nCommitter {c.Committer} <{c.CommitterEmail}>");
         DetailMeta = sb.ToString();

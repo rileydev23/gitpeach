@@ -1,12 +1,13 @@
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GitPeach.Services;
 
 namespace GitPeach.ViewModels;
 
 /// <summary>The rows shown by a DiffListView. Shared by the repository tab and the file-history window.</summary>
 public sealed partial class DiffPaneViewModel : ObservableObject
 {
-    public static readonly IReadOnlyList<DiffRowVM> Loading = new[] { DiffRowBuilder.Note("Cargando diff…") };
+    public static IReadOnlyList<DiffRowVM> Loading => new[] { DiffRowBuilder.Note(Loc.T("diff.loading")) };
 
     // Swapped as a whole (one UI update) instead of cleared and refilled row by row.
     [ObservableProperty] private IReadOnlyList<DiffRowVM> _rows = Array.Empty<DiffRowVM>();

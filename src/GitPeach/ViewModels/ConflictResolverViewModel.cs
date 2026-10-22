@@ -22,13 +22,15 @@ public sealed partial class ConflictResolverViewModel : ObservableObject
 
     public string FullPath { get; }
     public string FilePath { get; }
-    public string Title => $"Resolver conflicto — {FilePath}";
+    public string Title => Loc.F("conflict.title", FilePath);
     public string OursName { get; }
     public string TheirsName { get; }
+    public string AllOursText => Loc.F("conflict.all", OursName);
+    public string AllTheirsText => Loc.F("conflict.all", TheirsName);
 
     [ObservableProperty] private IReadOnlyList<object> _segments = Array.Empty<object>();
     [ObservableProperty] private string? _message;
-    [ObservableProperty] private string _progress = "Cargando…";
+    [ObservableProperty] private string _progress = Loc.T("conflict.loading");
     [ObservableProperty] private bool _canSave;
 
     public bool HasMessage => Message is not null;
@@ -44,7 +46,9 @@ public sealed partial class ConflictResolverViewModel : ObservableObject
         _files = files;
         _dialogs = dialogs;
         // During a rebase git swaps the sides: "ours" is the branch being rebased onto.
-        (OursName, TheirsName) = isRebase ? ("Base", "Tu commit") : ("Mía", "Entrante");
+        (OursName, TheirsName) = isRebase
+            ? (Loc.T("conflict.side.base"), Loc.T("conflict.side.yourCommit"))
+            : (Loc.T("conflict.side.mine"), Loc.T("conflict.side.incoming"));
         _ = LoadAsync();
     }
 
@@ -61,14 +65,14 @@ public sealed partial class ConflictResolverViewModel : ObservableObject
         catch (Exception ex)
         {
             _file = null;
-            Message = "No se pudo leer el archivo: " + ex.Message;
+            Message = Loc.F("conflict.readError", ex.Message);
         }
         if (_file is null)
         {
             Segments = Array.Empty<object>();
             Message ??= File.Exists(FullPath)
-                ? "Es un archivo binario: elige una versión completa desde el menú del archivo (clic derecho)."
-                : "El archivo no existe en el disco (fue eliminado en una de las versiones). Elige una versión desde el menú del archivo.";
+                ? Loc.T("conflict.binary")
+                : Loc.T("conflict.missing");
             UpdateProgress();
             return;
         }
@@ -89,14 +93,14 @@ public sealed partial class ConflictResolverViewModel : ObservableObject
         }
         Segments = list;
         if (n == 0)
-            Message = "No quedan marcadores de conflicto en este archivo. Si ya lo resolviste, márcalo como resuelto.";
+            Message = Loc.T("conflict.noMarkers");
         UpdateProgress();
     }
 
     private void UpdateProgress()
     {
         int total = Blocks.Count(), done = Blocks.Count(b => b.IsResolved);
-        Progress = total == 0 ? "" : $"{done} de {total} conflicto{(total == 1 ? "" : "s")} resuelto{(total == 1 ? "" : "s")}";
+        Progress = total == 0 ? "" : Loc.F(total == 1 ? "conflict.progress.one" : "conflict.progress.many", done, total);
         CanSave = _file is not null && done == total;
     }
 
@@ -132,7 +136,7 @@ public sealed partial class ConflictResolverViewModel : ObservableObject
         if (_file is null) return;
         if (!CanSave)
         {
-            await _dialogs.Message("Faltan conflictos", "Resuelve todos los bloques antes de guardar.");
+            await _dialogs.Message(Loc.T("conflict.unresolved.title"), Loc.T("conflict.unresolved.text"));
             return;
         }
         try
@@ -141,7 +145,7 @@ public sealed partial class ConflictResolverViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _dialogs.Message("No se pudo guardar", ex.Message);
+            await _dialogs.Message(Loc.T("conflict.saveError"), ex.Message);
             return;
         }
         _saved = true;
@@ -163,8 +167,8 @@ public sealed partial class ConflictResolverViewModel : ObservableObject
     /// <summary>Choices were made but not written to the file yet: closing asks first.</summary>
     public bool HasUnsavedChoices => !_saved && Blocks.Any(b => b.IsResolved);
 
-    public Task<bool> ConfirmCloseAsync() => _dialogs.Confirm("Resolución sin guardar",
-        "Las elecciones que hiciste no se han guardado en el archivo.", "Cerrar sin guardar", "Volver");
+    public Task<bool> ConfirmCloseAsync() => _dialogs.Confirm(Loc.T("conflict.unsaved.title"),
+        Loc.T("conflict.unsaved.text"), Loc.T("conflict.unsaved.close"), Loc.T("conflict.unsaved.back"));
 }
 
 /// <summary>Unchanged text between conflicts; long runs are shown collapsed to a few lines of context.</summary>
@@ -184,7 +188,7 @@ public sealed class CommonSegmentVM
         if (lines.Length <= head + tail + 1) { Display = string.Join('\n', lines); return; }
         var hidden = lines.Length - head - tail;
         var parts = lines.Take(head)
-            .Append($"⋯ {hidden} línea{(hidden == 1 ? "" : "s")} sin conflicto ⋯")
+            .Append(Loc.Plural("conflict.hiddenLines", hidden))
             .Concat(lines.Skip(lines.Length - tail));
         Display = string.Join('\n', parts);
     }
@@ -196,6 +200,9 @@ public sealed partial class ConflictBlockVM : ObservableObject
     private bool _applying;
 
     public int Number { get; }
+    public string NumberText => Loc.F("conflict.number", Number);
+    public string BothOursFirst => Loc.F("conflict.both", OursName);
+    public string BothTheirsFirst => Loc.F("conflict.both", TheirsName);
     public string Ours => Show(_block.Ours);
     public string Theirs => Show(_block.Theirs);
     public string? Base => _block.Base is null ? null : Show(_block.Base);
@@ -211,11 +218,11 @@ public sealed partial class ConflictBlockVM : ObservableObject
     public bool IsTheirs => Choice is ConflictChoice.Theirs;
     public string ChoiceText => Choice switch
     {
-        ConflictChoice.Ours => $"Resuelto: {OursName.ToLowerInvariant()}",
-        ConflictChoice.Theirs => $"Resuelto: {TheirsName.ToLowerInvariant()}",
-        ConflictChoice.OursThenTheirs or ConflictChoice.TheirsThenOurs => "Resuelto: ambas",
-        ConflictChoice.Custom => "Resuelto: editado a mano",
-        _ => "Sin resolver",
+        ConflictChoice.Ours => Loc.F("conflict.choice.side", OursName.ToLowerInvariant()),
+        ConflictChoice.Theirs => Loc.F("conflict.choice.side", TheirsName.ToLowerInvariant()),
+        ConflictChoice.OursThenTheirs or ConflictChoice.TheirsThenOurs => Loc.T("conflict.choice.both"),
+        ConflictChoice.Custom => Loc.T("conflict.choice.custom"),
+        _ => Loc.T("conflict.choice.none"),
     };
 
     public string OursName { get; }

@@ -16,7 +16,7 @@ public sealed class SidebarViewModel(RepoActions actions, IClipboardService clip
     {
         var refs = snap.Refs;
         Items.Clear();
-        Items.Add(new SidebarItem { Kind = SidebarKind.Header, Text = "RAMAS" });
+        Items.Add(new SidebarItem { Kind = SidebarKind.Header, Text = Loc.T("side.branches") });
         foreach (var b in refs.Locals.OrderBy(b => b.Name, StringComparer.OrdinalIgnoreCase))
             Items.Add(new SidebarItem
             {
@@ -24,7 +24,7 @@ public sealed class SidebarViewModel(RepoActions actions, IClipboardService clip
                 Detail = (b.IsCurrent ? "● " : "") + (b.Track ?? "").Trim('[', ']').Replace("ahead ", "↑").Replace("behind ", "↓").Replace(", ", " "),
             });
 
-        Items.Add(new SidebarItem { Kind = SidebarKind.Header, Text = "REMOTOS" });
+        Items.Add(new SidebarItem { Kind = SidebarKind.Header, Text = Loc.T("side.remotes") });
         foreach (var remote in refs.RemoteNames)
         {
             Items.Add(new SidebarItem { Kind = SidebarKind.Header, Text = remote, Indent = 12 });
@@ -76,38 +76,38 @@ public sealed class SidebarViewModel(RepoActions actions, IClipboardService clip
                 if (!b.IsCurrent)
                 {
                     list.Add(new("Checkout", () => actions.Checkout(b.Name)));
-                    list.Add(new("Merge en la rama actual", () => actions.Merge(b.Name)));
-                    list.Add(new("Rebase de la rama actual sobre esta", () => actions.Rebase(b.Name)));
+                    list.Add(new(Loc.T("side.menu.merge"), () => actions.Merge(b.Name)));
+                    list.Add(new(Loc.T("side.menu.rebase"), () => actions.Rebase(b.Name)));
                     list.Add(MenuAction.Separator);
                 }
-                list.Add(MenuAction.Sync("Ir al commit", () => SelectHashRequested?.Invoke(b.Hash)));
-                list.Add(new("Nueva rama desde aquí…", () => actions.NewBranch(b.Name)));
-                list.Add(new("Renombrar…", () => actions.RenameBranch(b)));
-                list.Add(new("Copiar nombre", () => clipboard.SetTextAsync(b.Name)));
+                list.Add(MenuAction.Sync(Loc.T("side.menu.goTo"), () => SelectHashRequested?.Invoke(b.Hash)));
+                list.Add(new(Loc.T("side.menu.branchFrom"), () => actions.NewBranch(b.Name)));
+                list.Add(new(Loc.T("side.menu.rename"), () => actions.RenameBranch(b)));
+                list.Add(new(Loc.T("side.menu.copyName"), () => clipboard.SetTextAsync(b.Name)));
                 list.Add(MenuAction.Separator);
                 list.Add(new("Push", () => actions.PushBranch(b)));
                 if (!b.IsCurrent)
                 {
                     list.Add(MenuAction.Separator);
-                    list.Add(new("Eliminar rama…", () => actions.DeleteBranch(b)));
+                    list.Add(new(Loc.T("side.menu.deleteBranch"), () => actions.DeleteBranch(b)));
                 }
                 break;
             case BranchInfo { IsRemote: true } rb:
-                list.Add(new("Checkout (crear rama local)", () => actions.CheckoutRemote(rb)));
-                list.Add(new("Merge en la rama actual", () => actions.Merge(rb.Name)));
-                list.Add(MenuAction.Sync("Ir al commit", () => SelectHashRequested?.Invoke(rb.Hash)));
-                list.Add(new("Nueva rama desde aquí…", () => actions.NewBranch(rb.Name)));
+                list.Add(new(Loc.T("side.menu.checkoutRemote"), () => actions.CheckoutRemote(rb)));
+                list.Add(new(Loc.T("side.menu.merge"), () => actions.Merge(rb.Name)));
+                list.Add(MenuAction.Sync(Loc.T("side.menu.goTo"), () => SelectHashRequested?.Invoke(rb.Hash)));
+                list.Add(new(Loc.T("side.menu.branchFrom"), () => actions.NewBranch(rb.Name)));
                 list.Add(MenuAction.Separator);
-                list.Add(new("Eliminar rama remota…", () => actions.DeleteRemoteBranch(rb)));
+                list.Add(new(Loc.T("side.menu.deleteRemoteBranch"), () => actions.DeleteRemoteBranch(rb)));
                 break;
             case TagInfo t:
                 list.Add(new("Checkout", () => actions.Checkout(t.Name)));
-                list.Add(MenuAction.Sync("Ir al commit", () => SelectHashRequested?.Invoke(t.Hash)));
-                list.Add(new("Copiar nombre", () => clipboard.SetTextAsync(t.Name)));
+                list.Add(MenuAction.Sync(Loc.T("side.menu.goTo"), () => SelectHashRequested?.Invoke(t.Hash)));
+                list.Add(new(Loc.T("side.menu.copyName"), () => clipboard.SetTextAsync(t.Name)));
                 list.Add(MenuAction.Separator);
-                list.Add(new("Push del tag", () => actions.PushTag(t)));
-                list.Add(new("Eliminar tag local…", () => actions.DeleteTag(t)));
-                list.Add(new("Eliminar tag del remoto…", () => actions.DeleteRemoteTag(t)));
+                list.Add(new(Loc.T("side.menu.pushTag"), () => actions.PushTag(t)));
+                list.Add(new(Loc.T("side.menu.deleteTag"), () => actions.DeleteTag(t)));
+                list.Add(new(Loc.T("side.menu.deleteRemoteTag"), () => actions.DeleteRemoteTag(t)));
                 break;
             case StashInfo s:
                 list.Add(new("Pop", () => actions.StashPop(s)));

@@ -7,7 +7,7 @@ namespace GitPeach.ViewModels;
 
 /// <summary>
 /// Minimal built-in viewer for a working-tree file, so nothing external is needed to look at it.
-/// Read-only until the user presses "Editar" (as in TextPeach); writes to disk only on "Guardar".
+/// Read-only until the user presses "Edit" (as in TextPeach); writes to disk only on "Save".
 /// </summary>
 public sealed partial class FileViewerViewModel : ObservableObject
 {
@@ -23,7 +23,7 @@ public sealed partial class FileViewerViewModel : ObservableObject
     [ObservableProperty] private bool _isEditing;
     [ObservableProperty] private bool _isDirty;
     [ObservableProperty] private string? _message;
-    [ObservableProperty] private string _info = "Cargando…";
+    [ObservableProperty] private string _info = Loc.T("conflict.loading");
 
     public string Title => (IsDirty ? "● " : IsEditing ? "✎ " : "") + RelativePath;
     public bool CanEdit => IsLoaded && !IsEditing;
@@ -56,13 +56,13 @@ public sealed partial class FileViewerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Message = "No se pudo leer el archivo: " + ex.Message;
+            Message = Loc.F("conflict.readError", ex.Message);
             Info = "";
             return;
         }
         if (_file is null)
         {
-            Message = "Es un archivo binario o demasiado grande para el visor de GitPeach.";
+            Message = Loc.T("viewer.binary");
             Info = "";
             return;
         }
@@ -83,8 +83,8 @@ public sealed partial class FileViewerViewModel : ObservableObject
     private void UpdateInfo()
     {
         if (_file is null) return;
-        var enc = _file.Encoding.WebName.ToUpperInvariant() + (_file.Encoding.GetPreamble().Length > 0 ? " con BOM" : "");
-        Info = $"{Document.LineCount} líneas · {enc} · {(IsEditing ? "Editando" : "Solo lectura")}";
+        var enc = _file.Encoding.WebName.ToUpperInvariant() + (_file.Encoding.GetPreamble().Length > 0 ? Loc.T("viewer.bom") : "");
+        Info = $"{Loc.Plural("viewer.lines", Document.LineCount)} · {enc} · {Loc.T(IsEditing ? "viewer.editing" : "viewer.readOnly")}";
     }
 
     [RelayCommand]
@@ -117,7 +117,7 @@ public sealed partial class FileViewerViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await _dialogs.Message("No se pudo guardar", ex.Message);
+            await _dialogs.Message(Loc.T("conflict.saveError"), ex.Message);
             return false;
         }
     }
@@ -130,8 +130,7 @@ public sealed partial class FileViewerViewModel : ObservableObject
         if (!IsEditing) return;
         if (IsDirty)
         {
-            if (!await _dialogs.Confirm("Cambios sin guardar",
-                    $"{RelativePath} tiene cambios sin guardar. ¿Descartarlos y volver a solo lectura?", "Descartar cambios"))
+            if (!await _dialogs.Confirm(Loc.T("viewer.unsaved.title"), Loc.F("viewer.unsaved.finish", RelativePath), Loc.T("viewer.unsaved.discard")))
                 return;
             SetText(_file?.Text ?? "");
         }
@@ -140,8 +139,8 @@ public sealed partial class FileViewerViewModel : ObservableObject
 
     /// <summary>Asked by the window before closing; false keeps it open.</summary>
     public async Task<bool> ConfirmCloseAsync() => !IsDirty ||
-        await _dialogs.Confirm("Cambios sin guardar", $"{RelativePath} tiene cambios sin guardar. Si cierras se perderán.",
-            "Cerrar sin guardar", "Volver");
+        await _dialogs.Confirm(Loc.T("viewer.unsaved.title"), Loc.F("viewer.unsaved.close", RelativePath),
+            Loc.T("conflict.unsaved.close"), Loc.T("conflict.unsaved.back"));
 
     [RelayCommand] private void OpenExternal() => _shell.OpenFile(FullPath);
 }

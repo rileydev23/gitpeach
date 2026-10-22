@@ -85,10 +85,10 @@ public class ConflictResolutionTests
     {
         var text = string.Concat(Enumerable.Range(1, 20).Select(i => $"l{i}\n"));
         var middle = new CommonSegmentVM(new CommonSegment(text), isFirst: false, isLast: false);
-        Assert.Equal("l1\nl2\nl3\n⋯ 14 líneas sin conflicto ⋯\nl18\nl19\nl20", middle.Display);
+        Assert.Equal($"l1\nl2\nl3\n{Loc.Plural("conflict.hiddenLines", 14)}\nl18\nl19\nl20", middle.Display);
 
         var first = new CommonSegmentVM(new CommonSegment(text), isFirst: true, isLast: false);
-        Assert.StartsWith("⋯ 17 líneas", first.Display);
+        Assert.StartsWith(Loc.Plural("conflict.hiddenLines", 17), first.Display);
     }
 }
 

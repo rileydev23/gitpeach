@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:GitPeach.ViewModels"
         xmlns:ae="using:AvaloniaEdit"
+        xmlns:l="using:GitPeach.Services"
         x:Class="GitPeach.Views.FileViewerWindow"
         x:DataType="vm:FileViewerViewModel"
         Title="{Binding Title}"
@@ -16,10 +17,10 @@
     <Border DockPanel.Dock="Top" Background="#26272b" BorderBrush="#3a3c42" BorderThickness="0,0,0,1" Padding="10,5">
       <DockPanel>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
-          <Button Classes="warn" Content="✎ Editar" Command="{Binding EditCommand}" IsVisible="{Binding CanEdit}" ToolTip.Tip="Habilita la edición de este archivo (Ctrl+E)" />
-          <Button Classes="accent" Content="Guardar" Command="{Binding SaveCommand}" IsVisible="{Binding IsEditing}" ToolTip.Tip="Ctrl+S" />
-          <Button Content="Terminar edición" Command="{Binding FinishEditingCommand}" IsVisible="{Binding IsEditing}" ToolTip.Tip="Vuelve a solo lectura (Ctrl+E)" />
-          <Button Content="Abrir con la app predeterminada" Command="{Binding OpenExternalCommand}" ToolTip.Tip="{Binding FullPath}" />
+          <Button Classes="warn" Content="{l:L viewer.edit}" Command="{Binding EditCommand}" IsVisible="{Binding CanEdit}" ToolTip.Tip="{l:L viewer.edit.tip}" />
+          <Button Classes="accent" Content="{l:L common.save}" Command="{Binding SaveCommand}" IsVisible="{Binding IsEditing}" ToolTip.Tip="Ctrl+S" />
+          <Button Content="{l:L viewer.finish}" Command="{Binding FinishEditingCommand}" IsVisible="{Binding IsEditing}" ToolTip.Tip="{l:L viewer.finish.tip}" />
+          <Button Content="{l:L files.menu.openDefault}" Command="{Binding OpenExternalCommand}" ToolTip.Tip="{Binding FullPath}" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" ClipToBounds="True">
           <TextBlock Text="{Binding RelativePath}" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip.Tip="{Binding FullPath}" />
@@ -29,7 +30,7 @@
     </Border>
 
     <Border DockPanel.Dock="Top" Background="#5a4318" Padding="10,5" IsVisible="{Binding IsEditing}">
-      <TextBlock Text="Modo edición — los cambios se escriben en el disco solo al pulsar Guardar (Ctrl+S)." FontWeight="SemiBold" />
+      <TextBlock Text="{l:L viewer.editBanner}" FontWeight="SemiBold" />
     </Border>
 
     <Panel>
@@ -38,7 +39,7 @@
                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
       <StackPanel IsVisible="{Binding HasMessage}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" MaxWidth="520">
         <TextBlock Text="{Binding Message}" TextWrapping="Wrap" TextAlignment="Center" />
-        <Button Content="Abrir con la app predeterminada" Command="{Binding OpenExternalCommand}" HorizontalAlignment="Center" />
+        <Button Content="{l:L files.menu.openDefault}" Command="{Binding OpenExternalCommand}" HorizontalAlignment="Center" />
       </StackPanel>
     </Panel>
   </DockPanel>

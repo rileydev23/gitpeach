@@ -5,14 +5,17 @@ namespace GitPeach.Services;
 
 public interface IDialogService
 {
-    Task<bool> Confirm(string title, string message, string ok = "Aceptar", string cancel = "Cancelar");
+    /// <summary>Null buttons read "OK" / "Cancel" in the interface language.</summary>
+    Task<bool> Confirm(string title, string message, string? ok = null, string? cancel = null);
     Task Message(string title, string message);
     /// <summary>F1 / "?": app name, version and description, then the keyboard shortcuts.</summary>
-    Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups, Action openDataFolder);
+    /// <summary>Also the language switch: <paramref name="savedLanguage"/> is the saved choice (null = system).</summary>
+    Task About(string description, string dataFolder, IReadOnlyList<(string Title, (string Gesture, string Description)[] Items)> shortcutGroups,
+        Action openDataFolder, string? savedLanguage, Action<string> chooseLanguage);
     Task<string?> Prompt(string title, string label, string initial = "");
-    Task<string[]?> Form(string title, (string Label, string Initial)[] fields, string ok = "Aceptar");
+    Task<string[]?> Form(string title, (string Label, string Initial)[] fields, string? ok = null);
     /// <summary>Lets the user pick one of <paramref name="options"/>; null when cancelled.</summary>
-    Task<string?> Choose(string title, string label, IReadOnlyList<string> options, string ok = "Aceptar");
+    Task<string?> Choose(string title, string label, IReadOnlyList<string> options, string? ok = null);
     Task<string?> PickFolder(string title);
     Task<RepoEntry?> QuickOpen(IReadOnlyList<RepoEntry> repos);
 }
@@ -44,7 +47,7 @@ public interface IWindowService
 public interface IAppStateStore
 {
     AppState State { get; }
-    /// <summary>Folder that holds state.json (shown in "Acerca de").</summary>
+    /// <summary>Folder that holds state.json (shown in About).</summary>
     string DataFolder { get; }
     void Save();
     RepoEntry? Find(string path);

@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Avalonia.Platform.Storage;
+using GitPeach.Services;
 using GitPeach.ViewModels;
 
 namespace GitPeach.Views;
@@ -52,7 +53,7 @@ public partial class MainWindow : Window
         MaxGlyph.Data = Geometry.Parse(max
             ? "M2.5,2.5 V0.5 H9.5 V7.5 H7.5 M0.5,2.5 H7.5 V9.5 H0.5 Z"
             : "M0.5,0.5 H9.5 V9.5 H0.5 Z");
-        ToolTip.SetTip(MaxButton, max ? "Restaurar" : "Maximizar");
+        ToolTip.SetTip(MaxButton, Loc.T(max ? "win.restore" : "win.maximize"));
     }
 
     private async void OnDrop(object? sender, DragEventArgs e)

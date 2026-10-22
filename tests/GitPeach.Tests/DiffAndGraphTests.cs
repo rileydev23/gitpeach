@@ -1,6 +1,7 @@
 using GitPeach.Git;
 using GitPeach.Git.Parsers;
 using GitPeach.Models;
+using GitPeach.Services;
 using GitPeach.ViewModels;
 
 namespace GitPeach.Tests;
@@ -65,7 +66,7 @@ public class DiffParserTests
 
         var commitRows = DiffRowBuilder.Build(files);
         Assert.All(commitRows.Where(r => r.IsHunkHeader), r => Assert.False(r.CanStage || r.CanUnstage || r.CanDiscard));
-        Assert.Contains(commitRows, r => r.IsNote && r.Text.Contains("binario"));
+        Assert.Contains(commitRows, r => r.IsNote && r.Text == Loc.T("diff.binary"));
         Assert.Equal(2 + 2 + 4 + 3 + 1, commitRows.Count); // 2 file headers, 2 hunk headers, 7 lines, 1 note
 
         var stagedRows = DiffRowBuilder.Build(files, new NoopHunkActions(), staged: true);

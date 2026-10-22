@@ -117,6 +117,27 @@
     <Setter Property="Background" Value="#6e5320" />
   </Style>
 
+  <!-- Two-state view switch (English | Español in About): joined buttons, active one in selection blue. -->
+  <Style Selector="Button.mode">
+    <Setter Property="Padding" Value="10,4" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Foreground" Value="#8a8d93" />
+  </Style>
+  <Style Selector="Button.mode.left">
+    <Setter Property="CornerRadius" Value="3,0,0,3" />
+  </Style>
+  <Style Selector="Button.mode.right">
+    <Setter Property="CornerRadius" Value="0,3,3,0" />
+    <Setter Property="BorderThickness" Value="0,1,1,1" />
+  </Style>
+  <Style Selector="Button.mode.active">
+    <Setter Property="Background" Value="#33507a" />
+    <Setter Property="Foreground" Value="#ffffff" />
+  </Style>
+  <Style Selector="Button.mode.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#3a5a88" />
+  </Style>
+
   <Style Selector="TextBox">
     <Setter Property="Background" Value="#26272b" />
     <Setter Property="BorderBrush" Value="#3a3c42" />

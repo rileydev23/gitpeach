@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using GitPeach.Git.Parsers;
 using GitPeach.Models;
+using GitPeach.Services;
 
 namespace GitPeach.Git;
 
@@ -223,7 +224,7 @@ public sealed partial class GitRepository : IGitRepository
         }
         catch (Exception ex)
         {
-            return GitResult.Fail($"No se pudo escribir .gitignore: {ex.Message}");
+            return GitResult.Fail(Loc.F("git.gitignoreError", ex.Message));
         }
     }
 

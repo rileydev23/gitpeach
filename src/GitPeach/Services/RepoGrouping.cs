@@ -24,7 +24,7 @@ public static class RepoGrouping
     /// <summary>"name", or "name (2)", "name (3)"… when taken.</summary>
     public static string UniqueName(AppState s, string baseName)
     {
-        baseName = string.IsNullOrWhiteSpace(baseName) ? "Grupo" : baseName.Trim();
+        baseName = string.IsNullOrWhiteSpace(baseName) ? Loc.T("home.newGroup.default") : baseName.Trim();
         var name = baseName;
         for (int i = 2; Find(s, name) is not null; i++) name = $"{baseName} ({i})";
         return name;

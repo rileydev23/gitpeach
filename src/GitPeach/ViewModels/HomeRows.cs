@@ -8,16 +8,16 @@ public abstract class HomeRow;
 
 public sealed class GroupHeaderRow : HomeRow
 {
-    /// <summary>Null for the "Sin grupo" section.</summary>
+    /// <summary>Null for the "Ungrouped" section.</summary>
     public required RepoGroup? Group { get; init; }
     public required int Count { get; init; }
     public required bool IsCollapsed { get; init; }
     public required ICommand ToggleCommand { get; init; }
     public required ICommand OpenAllCommand { get; init; }
 
-    public string Name => Group?.Name ?? "Sin grupo";
+    public string Name => Group?.Name ?? Loc.T("home.ungrouped");
     public string Chevron => IsCollapsed ? "▸" : "▾";
-    public string CountText => Count == 1 ? "1 repositorio" : $"{Count} repositorios";
+    public string CountText => Loc.Plural("common.repos", Count);
     public bool CanOpenAll => Count > 0;
 }
 
